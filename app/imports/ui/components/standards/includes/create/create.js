@@ -10,6 +10,7 @@ import UploadService from '/imports/ui/utils/uploads/UploadService';
 
 
 Template.CreateStandard.viewmodel({
+  share: 'docx',
   mixin: ['standard', 'numberRegex', 'organization', 'router', 'getChildrenData', 'modal'],
   save() {
     const data = this.getChildrenData();
@@ -150,6 +151,8 @@ Template.CreateStandard.viewmodel({
     uploadService.uploadExisting(fileId, file);
   },
   _launchDocxRendering(fileUrl, fileName, standardId) {
+    this.idSourceRendering(1);
+
     Meteor.call('Mammoth.convertDocxToHtml', {
       url: fileUrl,
       fileName: fileName + '.html',
@@ -163,6 +166,8 @@ Template.CreateStandard.viewmodel({
         if (result.error) {
           // Mammoth errors
           toastr.error(`Rendering document: ${result.error}`);
+        } else {
+          this.idSourceRendering(null);
         }
       }
     });

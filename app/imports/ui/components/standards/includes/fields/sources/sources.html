@@ -14,7 +14,7 @@
         <input type="radio" name="options" autocomplete="off"> Video
       </label>
     </div>
-      <i class="fa pull-right margin-top" {{b "class: { 'fa-spinner fa-pulse': docxRenderInProgress, 'fa-align-left': !docxRenderInProgress && sourceHtmlUrl }"}}></i>
+      <i class="fa pull-right margin-top" {{b "class: { 'fa-spinner fa-pulse': file && idSourceRendering === this.id, 'fa-align-left': !idSourceRendering && sourceHtmlUrl }"}}></i>
     <div {{b "if: sourceType === 'attachment'"}}>
       {{#with file}}
         {{> FileItem file=this removeFile=removeAttachmentFn}}

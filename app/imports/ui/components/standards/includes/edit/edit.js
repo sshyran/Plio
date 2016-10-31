@@ -29,9 +29,6 @@ Template.EditStandard.viewmodel({
   _getRisksQuery() {
     return { standardsIds: this._id && this._id() };
   },
-  onUpdateNotifyUserCb() {
-    return this.onUpdateNotifyUser.bind(this);
-  },
   onUpdateNotifyUser({ query, options }, cb) {
     return this.update({ query, options }, cb);
   },
