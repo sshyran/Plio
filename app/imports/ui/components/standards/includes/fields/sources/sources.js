@@ -7,7 +7,6 @@ Template.ESSources.viewmodel({
   share: 'docx',
   mixin: ['urlRegex', 'modal', 'callWithFocusCheck', 'organization'],
   autorun() {
-    console.log(this.idSourceRendering());
     if (!this.sourceType()) {
       this.sourceType('attachment');
     }
@@ -16,7 +15,7 @@ Template.ESSources.viewmodel({
   sourceType: 'attachment',
   sourceUrl: '',
   sourceFileId: '',
-  idSourceRendering: null,
+  renderingSourceFileId: null,
   file() {
     const fileId = this.sourceFileId();
 
@@ -93,7 +92,7 @@ Template.ESSources.viewmodel({
     const isDocx = file && file.extension === 'docx';
 
     if (isDocx) {
-      this.idSourceRendering(this.id());
+      this.renderingSourceFileId(this.id());
 
       Meteor.call('Mammoth.convertDocxToHtml', {
         url,
@@ -109,7 +108,7 @@ Template.ESSources.viewmodel({
             // Mammoth errors
             this.renderDocxError(`Rendering document: ${result.error}`);
           } else {
-            this.idSourceRendering(null);
+            this.renderingSourceFileId(null);
           }
         }
       });
@@ -119,7 +118,7 @@ Template.ESSources.viewmodel({
     this.modal().setError(error);
     Meteor.setTimeout(() => {
       this.modal().clearError();
-      this.idSourceRendering(null);
+      this.renderingSourceFileId(null);
     }, 5000);
   },
   afterInsertFn() {

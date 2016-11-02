@@ -11,6 +11,6 @@ ViewModel.share({
     uploads: new ReactiveArray
   },
   docx: {
-    idSourceRendering: null
+    renderingSourceFileId: null
   }
 });

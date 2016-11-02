@@ -151,7 +151,7 @@ Template.CreateStandard.viewmodel({
     uploadService.uploadExisting(fileId, file);
   },
   _launchDocxRendering(fileUrl, fileName, standardId) {
-    this.idSourceRendering(1);
+    this.renderingSourceFileId(1);
 
     Meteor.call('Mammoth.convertDocxToHtml', {
       url: fileUrl,
@@ -167,7 +167,7 @@ Template.CreateStandard.viewmodel({
           // Mammoth errors
           toastr.error(`Rendering document: ${result.error}`);
         } else {
-          this.idSourceRendering(null);
+          this.renderingSourceFileId(null);
         }
       }
     });
