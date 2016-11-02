@@ -4,16 +4,18 @@ import { Files } from '/imports/share/collections/files.js';
 import { remove as removeFile } from '/imports/api/files/methods.js';
 
 Template.ESSources.viewmodel({
+  share: 'docx',
   mixin: ['urlRegex', 'modal', 'callWithFocusCheck', 'organization'],
   autorun() {
     if (!this.sourceType()) {
       this.sourceType('attachment');
     }
   },
+  id: null,
   sourceType: 'attachment',
   sourceUrl: '',
   sourceFileId: '',
-  docxRenderInProgress: null,
+  renderingSourceFileId: null,
   file() {
     const fileId = this.sourceFileId();
 
@@ -90,7 +92,8 @@ Template.ESSources.viewmodel({
     const isDocx = file && file.extension === 'docx';
 
     if (isDocx) {
-      this.docxRenderInProgress(true);
+      this.renderingSourceFileId(this.id());
+
       Meteor.call('Mammoth.convertDocxToHtml', {
         url,
         fileName: file.name + '.html',
@@ -105,7 +108,7 @@ Template.ESSources.viewmodel({
             // Mammoth errors
             this.renderDocxError(`Rendering document: ${result.error}`);
           } else {
-            this.docxRenderInProgress('');
+            this.renderingSourceFileId(null);
           }
         }
       });
@@ -115,7 +118,7 @@ Template.ESSources.viewmodel({
     this.modal().setError(error);
     Meteor.setTimeout(() => {
       this.modal().clearError();
-      this.docxRenderInProgress('');
+      this.renderingSourceFileId(null);
     }, 5000);
   },
   afterInsertFn() {

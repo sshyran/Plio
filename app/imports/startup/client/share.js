@@ -9,5 +9,8 @@ ViewModel.share({
   },
   uploader: {
     uploads: new ReactiveArray
+  },
+  docx: {
+    renderingSourceFileId: null
   }
 });

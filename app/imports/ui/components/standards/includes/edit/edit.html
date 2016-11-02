@@ -43,7 +43,7 @@
       {{> Subcards_Notify_Edit
           doc=standard
           documentType="standard"
-          onUpdate=onUpdateNotifyUserCb}}
+          onUpdate=(callback 'onUpdateNotifyUser')}}
 
       {{> Subcards_NonConformities_Edit
           _id=this._id
