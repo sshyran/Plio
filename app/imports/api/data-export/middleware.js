@@ -14,15 +14,25 @@ WebApp.connectHandlers.use('/export', (req, res) => {
   const filePath = join(tmpdir(), fileName);
   const hash = createMd5Hash(getCreatedFileTime(filePath));
 
-  function sendNotFound() {
-    res.writeHead(404);
-    return res.end('Page not found');
+  // function sendNotFound() {
+  //   res.writeHead(404);
+  //   return res.end('Page not found');
+  // }
+
+  if (hash !== queryData.token) {
+    res.writeHead(200, { 'Content-type': 'application/json' });
+    return res.end(JSON.stringify({
+      hash,
+      token: queryData.token,
+      createdFileTime: getCreatedFileTime(filePath),
+    }));
   }
 
-  if (hash !== queryData.token) return sendNotFound();
-
   return readFile(filePath, (error, result) => {
-    if (error) return sendNotFound();
+    if (error) {
+      res.writeHead(200, { 'Content-type': 'application/json' });
+      return res.end(JSON.stringify(error));
+    }
 
     res.writeHead(200, { 'Content-type': 'text/csv' });
     return res.end(result);

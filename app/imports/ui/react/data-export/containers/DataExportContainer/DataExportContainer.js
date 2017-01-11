@@ -39,11 +39,15 @@ const enhance = compose(
         fields: selectedFields,
         filters: selectedFilters,
       })(store.dispatch)
-        .then(({ fileName, token }) => {
+        .then(({ fileName, token, ...rest }) => {
+          console.log({ fileName, token, ...rest });
           setProcessing(false);
           window.location = Meteor.absoluteUrl(`export/${fileName}?token=${token}`);
         })
-        .catch(() => setProcessing(false));
+        .catch((error) => {
+          console.log(error);
+          setProcessing(false);
+        });
     },
   }),
 );

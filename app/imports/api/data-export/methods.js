@@ -42,6 +42,10 @@ function saveData(file, fields, mapping, data) {
   writer.on('finish', () => streamFuture.return({
     fileName: file.name,
     token: createMd5Hash(getCreatedFileTime(file.path)),
+    debugData: {
+      file,
+      createdTime: getCreatedFileTime(file.path),
+    },
   }));
 
   writer.pipe(stream);
