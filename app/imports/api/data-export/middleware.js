@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { _ } from 'meteor/underscore';
 import url from 'url';
-import { getCreatedFileTime, createMd5Hash } from './helpers';
+import checksum from 'checksum';
 
 WebApp.connectHandlers.use('/export', (req, res) => {
   const reqUrl = url.parse(req.url, true);
@@ -12,26 +12,24 @@ WebApp.connectHandlers.use('/export', (req, res) => {
 
   const queryData = reqUrl.query;
   const filePath = join(tmpdir(), fileName);
-  const hash = createMd5Hash(getCreatedFileTime(filePath));
-
-  // function sendNotFound() {
-  //   res.writeHead(404);
-  //   return res.end('Page not found');
-  // }
-
-  if (hash !== queryData.token) {
-    res.writeHead(200, { 'Content-type': 'application/json' });
-    return res.end(JSON.stringify({
-      hash,
-      token: queryData.token,
-      createdFileTime: getCreatedFileTime(filePath),
-    }));
-  }
 
   return readFile(filePath, (error, result) => {
     if (error) {
       res.writeHead(200, { 'Content-type': 'application/json' });
       return res.end(JSON.stringify(error));
+    }
+
+    const fileChecksum = checksum(result);
+
+    if (fileChecksum !== queryData.token) {
+      res.writeHead(200, { 'Content-type': 'application/json' });
+      return res.end(JSON.stringify({
+        fileChecksum,
+        token: queryData.token,
+        createdFileTime: getCreatedFileTime(filePath),
+      }));
+      // res.writeHead(400);
+      // return res.end('The file is corrupted. Please, try export data again.');
     }
 
     res.writeHead(200, { 'Content-type': 'text/csv' });

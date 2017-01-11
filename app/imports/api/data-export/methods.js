@@ -6,10 +6,10 @@ import { join } from 'path';
 import moment from 'moment-timezone';
 import Future from 'fibers/future';
 import csv from 'fast-csv';
+import checksum from 'checksum';
 
 import * as Mapping from './mapping';
 import DataAggregator from './DataAggregator';
-import { getCreatedFileTime, createMd5Hash } from './helpers';
 import { isOrgMember } from '../checkers';
 import Method from '../method';
 import { ORG_MUST_BE_MEMBER } from '../organizations/errors';
@@ -39,13 +39,14 @@ function saveData(file, fields, mapping, data) {
       }),
     ));
 
-  writer.on('finish', () => streamFuture.return({
-    fileName: file.name,
-    token: createMd5Hash(getCreatedFileTime(file.path)),
-    debugData: {
+  writer.on('finish', () => checksum.file(file.path, (err, fileChecksum) => {
+    if (err) throw err;
+
+    streamFuture.return({
+      fileName: file.name,
+      token: fileChecksum,
       file,
-      createdTime: getCreatedFileTime(file.path),
-    },
+    });
   }));
 
   writer.pipe(stream);
