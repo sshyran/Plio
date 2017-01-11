@@ -26,7 +26,6 @@ WebApp.connectHandlers.use('/export', (req, res) => {
       return res.end(JSON.stringify({
         fileChecksum,
         token: queryData.token,
-        createdFileTime: getCreatedFileTime(filePath),
       }));
       // res.writeHead(400);
       // return res.end('The file is corrupted. Please, try export data again.');
