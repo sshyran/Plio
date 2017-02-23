@@ -1,9 +1,10 @@
 import { normalize } from 'normalizr';
 import merge from 'lodash.merge';
+import mergeWith from 'lodash.mergewith';
 import set from 'lodash.set';
 import * as schemas from '../lib/schema';
 
-import { assoc, omitC } from '/imports/api/helpers';
+import { omitC } from '/imports/api/helpers';
 
 import {
   SET_DEPARTMENTS,
@@ -34,11 +35,23 @@ const normalizer = (state, action) => {
   return merge({}, state, normalizedData);
 };
 
-const add = (state, path, action) =>
-  assoc(`entities.${path}.${action.payload._id}`, action.payload);
-const update = (state, path, action) =>
+const add = (path, state, action) => {
+  const customizer = (objValue, srcValue) => (Array.isArray(objValue)
+    ? objValue.concat(srcValue)
+    : undefined);
+
+  const newState = {
+    entities: { [path]: { [action.payload._id]: action.payload } },
+    result: { [path]: [action.payload._id] },
+  };
+
+  return mergeWith(state, newState, customizer);
+};
+
+const update = (path, state, action) =>
   set({ ...state }, `entities.${path}.${action.payload._id}`, action.payload);
-const remove = (state, path, action) => ({
+  
+const remove = (path, state, action) => ({
   ...state,
   entities: {
     ...state.entities,
@@ -65,11 +78,11 @@ export default function reducer(state = {}, action) {
     case SET_USERS:
       return normalizer(state, action);
     case ADD_STANDARD:
-      return add(state, 'standards', action);
+      return add('standards', state, action);
     case UPDATE_STANDARD:
-      return update(state, 'standards', action);
+      return update('standards', state, action);
     case REMOVE_STANDARD:
-      return remove(state, 'standards', action);
+      return remove('standards', state, action);
     default:
       return state;
   }

@@ -25,6 +25,7 @@
     "lodash.get": "^4.4.2",
     "lodash.invoke": "^4.5.1",
     "lodash.merge": "^4.6.0",
+    "lodash.mergewith": "^4.6.0",
     "lodash.property": "^4.4.2",
     "lodash.set": "^4.3.2",
     "mammoth": "^1.0.3",

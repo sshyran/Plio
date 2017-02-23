@@ -1,8 +1,12 @@
+import { combineReducers } from 'redux';
+
 import {
   SET_FILTERED_STANDARDS,
   SET_STANDARD_DEPS_READY,
   SET_STANDARDS_INITIALIZING,
+  SET_STANDARDS,
 } from '../actions/types';
+import { reduceC } from '/imports/api/helpers';
 
 const initialState = {
   standardsFiltered: [],
@@ -10,7 +14,22 @@ const initialState = {
   initializing: true,
 };
 
-export default function reducer(state = initialState, action) {
+const reduceVisibleStandards = reduceC((acc, { _id, isDeleted }) => {
+  if (isDeleted) return { ...acc, isDeleted: [...acc.isDeleted, _id] };
+
+  return { ...acc, nonDeleted: [...acc.nonDeleted, _id] };
+}, {});
+
+function visibleStandards(state = {}, action) {
+  switch (action.type) {
+    case SET_STANDARDS:
+      return reduceVisibleStandards(action.payload);
+    default:
+      return state;
+  }
+}
+
+function standardsReducer(state = initialState, action) {
   switch (action.type) {
     case SET_FILTERED_STANDARDS:
     case SET_STANDARD_DEPS_READY:
@@ -20,3 +39,8 @@ export default function reducer(state = initialState, action) {
       return state;
   }
 }
+
+export default combineReducers({
+  visibleStandards,
+  standards: standardsReducer,
+});
