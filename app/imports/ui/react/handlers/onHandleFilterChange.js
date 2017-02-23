@@ -11,7 +11,7 @@ const onHandleFilterChange = props => index => {
 
   FlowRouter.setQueryParams({ filter });
 
-  props.dispatch(batchActions(actions));
+  return props.dispatch(batchActions(actions));
 };
 
 export default onHandleFilterChange;

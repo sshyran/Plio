@@ -1,6 +1,5 @@
 import { connect } from 'react-redux';
 import { compose, withHandlers, mapProps, shouldUpdate } from 'recompose';
-import { _ } from 'meteor/underscore';
 
 import StandardsLHS from '../../components/LHS';
 import {
@@ -12,9 +11,7 @@ import {
   onDataImportModalClose,
   openDocumentCreationModal,
 } from './handlers';
-import { getStandardsByFilter } from '../../helpers';
 import {
-  sortArrayByTitlePrefix,
   getSearchMatchText,
   combineObjects,
   pickFrom,
@@ -22,9 +19,11 @@ import {
   pickC,
   filterC,
   includes,
+  cond,
+  always,
+  identity,
 } from '/imports/api/helpers';
 import { onToggleCollapse } from '/imports/ui/react/share/LHS/handlers';
-import { STANDARD_FILTER_MAP } from '/imports/api/constants';
 
 const mapStateToProps = combineObjects([
   pickFrom('standards', ['standardsFiltered']),
@@ -32,54 +31,54 @@ const mapStateToProps = combineObjects([
   pickFrom('global', ['searchText', 'filter', 'animating', 'urlItemId', 'userId']),
   pickFrom('organizations', ['organizationId']),
   pickFrom('dataImport', ['isModalOpened']),
+  pickFrom('entities.standards', ['entities', 'allIds']),
 ]);
 
 const pickComparableProps = pickC(['_id', 'sectionId', 'typeId', 'isDeleted']);
 
+const shouldUpdatePred = (props, nextProps) => !!(
+  props.searchText !== nextProps.searchText ||
+  props.filter !== nextProps.filter ||
+  props.animating !== nextProps.animating ||
+  props.isModalOpened !== nextProps.isModalOpened ||
+  props.allIds.length !== nextProps.allIds.length ||
+  !equals(
+    pickComparableProps(props.entities[props.urlItemId]),
+    pickComparableProps(nextProps.entities[nextProps.urlItemId])
+  )
+);
+
+const propsMapper = ({ isModalOpened: isDataImportModalOpened, ...props }) => {
+  const getIds = cond(
+    always(props.searchText),
+    filterC(id => includes(id, props.standardsFiltered)),
+    identity
+  );
+  const standardIds = getIds(props.allIds);
+  const searchResultsText = getSearchMatchText(props.searchText, standardIds.length);
+
+  return {
+    ...props,
+    searchResultsText,
+    isDataImportModalOpened,
+    standardIds,
+  };
+};
+
+const handlers = {
+  onToggleCollapse,
+  onClear,
+  onModalOpen,
+  getDocsCount,
+  onDataImportSuccess,
+  onDataImportModalClose,
+  openDocumentCreationModal,
+  onSearchTextChange: props => e => onSearchTextChange(props, e.target),
+};
+
 export default compose(
   connect(mapStateToProps),
-  shouldUpdate((props, nextProps) => !!(
-    props.searchText !== nextProps.searchText ||
-    props.filter !== nextProps.filter ||
-    props.animating !== nextProps.animating ||
-    props.standards.length !== nextProps.standards.length ||
-    props.isModalOpened !== nextProps.isModalOpened ||
-    !equals(
-      pickComparableProps(props.standardsByIds[props.urlItemId]),
-      pickComparableProps(nextProps.standardsByIds[nextProps.urlItemId])
-    )
-  )),
-  mapProps(({ isModalOpened: isDataImportModalOpened, ...props }) => {
-    const filteredStandards = getStandardsByFilter({
-      standards: props.standards,
-      filter: props.filter,
-    });
-
-    let standards = props.searchText
-      ? filterC(std => includes(std._id, props.standardsFiltered), filteredStandards)
-      : filteredStandards;
-
-    if (props.filter !== STANDARD_FILTER_MAP.DELETED) standards = sortArrayByTitlePrefix(standards);
-    else standards = _.sortBy(standards, 'deletedAt').reverse();
-
-    const searchResultsText = getSearchMatchText(props.searchText, standards.length);
-
-    return {
-      ...props,
-      standards,
-      searchResultsText,
-      isDataImportModalOpened,
-      filteredStandards,
-    };
-  }),
-  withHandlers({
-    onToggleCollapse,
-    onClear,
-    onModalOpen,
-    getDocsCount,
-    onDataImportSuccess,
-    onDataImportModalClose,
-    openDocumentCreationModal,
-    onSearchTextChange: props => e => onSearchTextChange(props, e.target),
-  }),
+  shouldUpdate(shouldUpdatePred),
+  mapProps(propsMapper),
+  withHandlers(handlers),
 )(StandardsLHS);

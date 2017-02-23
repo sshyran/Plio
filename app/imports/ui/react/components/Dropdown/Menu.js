@@ -11,8 +11,9 @@ const enhance = mapProps(props => ({
 
     return React.cloneElement(child, {
       active: isActive,
-      onClick: () => {
-        props.onChange(index);
+      onClick: (e) => {
+        e.preventDefault();
+        if (typeof props.onChange === 'function') props.onChange(index);
       },
     });
   }),

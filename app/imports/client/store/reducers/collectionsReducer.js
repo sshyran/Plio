@@ -1,3 +1,5 @@
+// NOTE: Gradually moving from this to entities reducer
+
 import {
   SET_DEPARTMENTS,
   SET_FILES,

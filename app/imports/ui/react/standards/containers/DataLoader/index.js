@@ -2,8 +2,8 @@ import { composeWithTracker, compose as kompose } from 'react-komposer';
 import {
   compose,
   lifecycle,
-  shouldUpdate,
   defaultProps,
+  onlyUpdateForKeys,
   withHandlers,
   branch,
   renderComponent,
@@ -108,18 +108,25 @@ export default compose(
       'discussion.isDiscussionOpened',
       'global.urlItemId',
       'global.filter',
+      'window.width',
+      'mobile.showCard',
     ])(state),
   })),
-  shouldUpdate((props, nextProps) => !!(
-    props.isDiscussionOpened !== nextProps.isDiscussionOpened ||
-    props.loading !== nextProps.loading ||
-    typeof props.organization !== typeof nextProps.organization ||
-    props.orgSerialNumber !== nextProps.orgSerialNumber ||
-    props.filter !== nextProps.filter
-  )),
-  connect(pickDeep(['window.width', 'mobile.showCard'])),
+  onlyUpdateForKeys([
+    'isDiscussionOpened',
+    'loading',
+    'organization',
+    'orgSerialNumber',
+    'filter',
+    'showCard',
+    'width',
+  ]),
   withHandlers({
-    onHandleFilterChange,
+    onHandleFilterChange: props => index => {
+      console.log(index);
+      const result = onHandleFilterChange(props, index);
+      console.log(result);
+    },
     onHandleReturn,
   }),
 )(StandardsLayout);

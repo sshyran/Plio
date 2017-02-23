@@ -188,6 +188,7 @@ export const pickDeep = curry((paths, obj) => Object.assign([], paths).reduce((a
   [path.replace(/.*\./g, '')]: get(obj, path),
 }), {}));
 
+// pickFrom('a.b', ['c'])({ a: { b: { c: [1, 2] } } }) => { c: [1, 2] }
 export const pickFrom = curry((prop, props) => compose(pickC(props), property(prop)));
 
 export const pickFromDiscussion = pickFrom('discussion');
