@@ -26,6 +26,8 @@ export default compose(
   mapProps(({ width, showCard, isDiscussionOpened, ...props }) => ({
     ...props,
     displayRHS: width <= MOBILE_BREAKPOINT && (showCard || isDiscussionOpened),
-    children: props.children.filter(child => Boolean(child)),
+    children: _.isFunction(props.children.filter)
+      && props.children.filter(child => Boolean(child))
+      || props.children,
   })),
 )(Page);

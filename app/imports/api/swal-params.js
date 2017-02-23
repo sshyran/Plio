@@ -9,14 +9,3 @@ export const ORG_DELETE = {
   closeOnConfirm: false,
   confirmButtonClass: 'btn-md btn-danger',
 };
-
-export const ORG_DELETE_PASSWORD = {
-  title: 'Confirm deletion of "{{orgName}}" organization',
-  text: 'Enter your password:',
-  type: 'input',
-  inputType: 'password',
-  showCancelButton: true,
-  confirmButtonText: 'Confirm',
-  closeOnConfirm: false,
-  showLoaderOnConfirm: true,
-};

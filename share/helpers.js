@@ -22,9 +22,9 @@ import { Organizations } from './collections/organizations';
 import { Discussions } from './collections/discussions';
 
 
-export const capitalize = str => str.charAt(0).toUpperCase() + str.substring(1);
+export const capitalize = str => `${str}`.charAt(0).toUpperCase() + `${str}`.substring(1);
 
-export const lowercase = str => str.charAt(0).toLowerCase() + str.substring(1);
+export const lowercase = str => `${str}`.charAt(0).toLowerCase() + `${str}`.substring(1);
 
 export const deepExtend = (dest, src) => {
   _(src).each((val, key) => {
@@ -78,13 +78,17 @@ export const getCollectionNameByDocType = (docType) => ({
   [DocumentTypes.RISK]: CollectionNames.RISKS,
 })[docType];
 
+export const getFormattedDate = (date, stringFormat) => {
+  let format = stringFormat;
+  if (typeof format !== 'string') format = 'DD MMM YYYY';
+  return moment(date).format(format);
+};
+
 export const getDocTypePlural = (docType) => ({
   [DocumentTypes.STANDARD]: DocumentTypesPlural.STANDARDS,
   [DocumentTypes.RISK]: DocumentTypesPlural.RISKS,
   [DocumentTypes.NON_CONFORMITY]: DocumentTypesPlural.NON_CONFORMITIES,
 })[docType];
-
-export const getFormattedDate = (date, stringFormat) => moment(date).format(stringFormat);
 
 export const getLinkedDoc = (documentId, documentType) => {
   const collection = getCollectionByDocType(documentType);

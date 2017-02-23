@@ -9,10 +9,12 @@ import {
   includes,
   propEqId,
   pickC,
-  propEq,
+  find,
+  filterC,
 } from '/imports/api/helpers';
-import { ProblemTypes, DocumentTypes } from '/imports/share/constants';
+import { DocumentTypes } from '/imports/share/constants';
 import ConnectedDocList from '../../components/ConnectedDocList';
+import { getLinkedLessons, getLinkedActions } from '/imports/ui/react/share/helpers/linked';
 
 export default compose(
   setPropTypes({
@@ -25,27 +27,24 @@ export default compose(
     ], state.collections),
   })),
   mapProps((props) => {
-    const problemFilter = every([
+    const filterProblems = filterC(every([
       notDeleted,
       compose(includes(props.standardId), property('standardsIds')),
-    ]);
-    const ncs = props.ncs.filter(problemFilter);
-    const risks = props.risks.filter(problemFilter);
-    const actions = props.actions.filter(every([
-      notDeleted,
-      ({ linkedTo }) => linkedTo.find(({ documentId, documentType }) => !!(
-        (documentType !== ProblemTypes.NON_CONFORMITY ||
-        documentType !== ProblemTypes.RISK) &&
-        ncs.concat(risks).find(propEqId(documentId))
-      )),
     ]));
-    const lessons = props.lessons.filter(every([
-      propEq('documentId', props.standardId),
-      propEq('documentType', DocumentTypes.STANDARD),
-    ])).map(ll => ({
-      ...ll,
-      sequentialId: `LL${ll.serialNumber}`,
-    }));
+    const ncs = filterProblems(props.ncs);
+    const risks = filterProblems(props.risks);
+    const predicate = every([
+      notDeleted,
+      compose(
+        find(({ documentId }) => find(
+          propEqId(documentId),
+          ncs.concat(risks),
+        )),
+        property('linkedTo'),
+      ),
+    ]);
+    const actions = getLinkedActions(predicate, props, props.actions);
+    const lessons = getLinkedLessons(props.standardId, DocumentTypes.STANDARD, props.lessons);
 
     return { ...props, ncs, risks, actions, lessons };
   })

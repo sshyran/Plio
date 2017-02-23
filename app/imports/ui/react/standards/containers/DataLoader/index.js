@@ -7,44 +7,29 @@ import {
   withHandlers,
   branch,
   renderComponent,
+  renameProp,
 } from 'recompose';
 import { connect } from 'react-redux';
-import { batchActions } from 'redux-batched-actions';
-import { FlowRouter } from 'meteor/kadira:flow-router';
-import { Meteor } from 'meteor/meteor';
-import { _ } from 'meteor/underscore';
+import property from 'lodash.property';
 
-import { DocumentLayoutSubs } from '/imports/startup/client/subsmanagers';
 import StandardsLayout from '../../components/Layout';
-import {
-  setFilter,
-  setSearchText,
-} from '/imports/client/store/actions/globalActions';
-import { setShowCard } from '/imports/client/store/actions/mobileActions';
-import { pickDeep } from '/imports/api/helpers';
-import { StandardFilters, MOBILE_BREAKPOINT } from '/imports/api/constants';
-import { goTo } from '../../../../utils/router/actions';
+import loadStandardsLayoutData from '../../loaders/loadLayoutData';
+import { pickDeep, identity, invokeStop, combineObjects, pickFrom } from '/imports/api/helpers';
+import { StandardFilters } from '/imports/api/constants';
+import onHandleFilterChange from '../../../handlers/onHandleFilterChange';
+import onHandleReturn from '../../../handlers/onHandleReturn';
 import loadInitialData from '../../../loaders/loadInitialData';
 import loadUsersData from '../../../loaders/loadUsersData';
 import loadIsDiscussionOpened from '../../../loaders/loadIsDiscussionOpened';
-import loadLayoutData from '../../../loaders/loadLayoutData';
 import loadMainData from '../../loaders/loadMainData';
 import loadCardData from '../../loaders/loadCardData';
 import loadDeps from '../../loaders/loadDeps';
-import { setInitializing } from '/imports/client/store/actions/standardsActions';
 import {
   observeStandards,
   observeStandardBookSections,
   observeStandardTypes,
 } from '../../observers';
-
-const getLayoutData = () => loadLayoutData(({ filter, orgSerialNumber }) => {
-  const isDeleted = filter === 3
-          ? true
-          : { $in: [null, false] };
-
-  return DocumentLayoutSubs.subscribe('standardsLayout', orgSerialNumber, isDeleted);
-});
+import { setInitializing } from '/imports/client/store/actions/standardsActions';
 
 export default compose(
   connect(),
@@ -56,20 +41,15 @@ export default compose(
   connect(pickDeep([
     'global.filter',
     'organizations.orgSerialNumber',
+    'dataImport.isInProgress',
   ])),
-  composeWithTracker(
-    getLayoutData(),
-    null,
-    null,
-    {
-      shouldResubscribe: (props, nextProps) =>
-        props.orgSerialNumber !== nextProps.orgSerialNumber || props.filter !== nextProps.filter,
-    }
-  ),
+  loadStandardsLayoutData,
+  connect(pickDeep(['global.dataLoading'])),
+  renameProp('dataLoading', 'loading'),
   branch(
-    props => props.loading,
+    property('loading'),
     renderComponent(StandardsLayout),
-    _.identity
+    identity,
   ),
   composeWithTracker(loadUsersData),
   connect(pickDeep(['organizations.organizationId'])),
@@ -91,30 +71,33 @@ export default compose(
       props.organizationId !== nextProps.organizationId ||
       props.initializing !== nextProps.initializing,
   }),
-  connect(pickDeep(['global.dataLoading', 'standards.areDepsReady', 'standards.initializing'])),
+  connect(combineObjects([
+    pickFrom('standards', ['areDepsReady', 'initializing']),
+    pickDeep(['global.dataLoading']),
+  ])),
   lifecycle({
-    componentWillReceiveProps(nextProps) {
-      if (!nextProps.dataLoading && nextProps.initializing && nextProps.areDepsReady) {
-        const { dispatch, organizationId } = nextProps;
-
-        Meteor.defer(() => {
+    componentWillReceiveProps({
+      dataLoading,
+      areDepsReady,
+      initializing,
+      dispatch,
+      organizationId,
+    }) {
+      if (!dataLoading && areDepsReady && initializing) {
+        setTimeout(() => {
           const args = [dispatch, { organizationId }];
           this.observers = [
             observeStandards(...args),
             observeStandardBookSections(...args),
             observeStandardTypes(...args),
           ];
-        });
+        }, 0);
 
         dispatch(setInitializing(false));
       }
     },
     componentWillUnmount() {
-      const result = this.observers && this.observers.map(observer => observer && observer.stop());
-
-      this.props.dispatch(setInitializing(true));
-
-      return result;
+      return this.observers && this.observers.map(invokeStop);
     },
   }),
   connect(state => ({
@@ -136,31 +119,7 @@ export default compose(
   )),
   connect(pickDeep(['window.width', 'mobile.showCard'])),
   withHandlers({
-    onHandleFilterChange: props => index => {
-      const filter = parseInt(Object.keys(props.filters)[index], 10);
-      const actions = [
-        setSearchText(''),
-        setFilter(filter),
-      ];
-
-      FlowRouter.setQueryParams({ filter });
-
-      props.dispatch(batchActions(actions));
-    },
-    onHandleReturn: (props) => () => {
-      const { orgSerialNumber, urlItemId } = props;
-
-      if (props.width <= MOBILE_BREAKPOINT) {
-        props.dispatch(setShowCard(false));
-
-        if (props.isDiscussionOpened) {
-          return goTo('standard')({ orgSerialNumber, urlItemId });
-        } else if (!props.isDiscussionOpened && props.showCard) {
-          return true;
-        }
-      }
-
-      return goTo('dashboardPage')();
-    },
+    onHandleFilterChange,
+    onHandleReturn,
   }),
 )(StandardsLayout);

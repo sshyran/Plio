@@ -1,5 +1,5 @@
 import { ProblemsStatuses } from '/imports/share/constants.js';
-import { getProblemStatusColor } from '/imports/api/helpers';
+import { getProblemStatusColor } from '/imports/api/problems/helpers';
 
 export default {
   getStatusName(status) {

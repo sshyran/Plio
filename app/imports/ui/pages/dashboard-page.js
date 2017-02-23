@@ -1,10 +1,9 @@
 import { Template } from 'meteor/templating';
 import pluralize from 'pluralize';
-import property from 'lodash.property';
 
-import { Organizations } from '/imports/share/collections/organizations.js';
-import { UserSubs, CountSubs, BackgroundSubs } from '/imports/startup/client/subsmanagers.js';
-import { updateLastAccessedDate } from '/imports/api/organizations/methods.js';
+import { CountSubs, BackgroundSubs } from '/imports/startup/client/subsmanagers';
+import { updateLastAccessedDate } from '/imports/api/organizations/methods';
+import { getC } from '/imports/api/helpers';
 
 Template.Dashboard_Page.viewmodel({
   mixin: ['organization', { 'counter': 'counter' }],
@@ -93,6 +92,6 @@ Template.Dashboard_Page.viewmodel({
     return this._renderMetrics('risk', this.risksViewedCount(), this.risksNotViewedCount());
   },
   titles() {
-    return this.organization().homeScreenTitles;
+    return getC('homeScreenTitles', this.organization());
   },
 });

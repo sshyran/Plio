@@ -3,20 +3,17 @@ import property from 'lodash.property';
 
 import Field from '../Field';
 
-const renderDepartments = departments =>
-  departments.map(property('name')).join(', ');
-
 const Departments = ({
   departments = [],
-  label = 'Departments',
+  label = 'Department(s)',
 }) => (
-  <Field label={label}>
-    {renderDepartments(departments)}
+  <Field {...{ label }}>
+    {departments.map(property('name')).join(', ')}
   </Field>
 );
 
 Departments.propTypes = {
-  departments: PropTypes.array,
+  departments: PropTypes.arrayOf(PropTypes.object),
   label: PropTypes.string,
 };
 

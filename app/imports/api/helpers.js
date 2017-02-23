@@ -2,16 +2,18 @@ import curry from 'lodash.curry';
 import get from 'lodash.get';
 import property from 'lodash.property';
 import invoke from 'lodash.invoke';
+import set from 'lodash.set';
+import omit from 'lodash.omit';
 import { Meteor } from 'meteor/meteor';
 import { _ } from 'meteor/underscore';
 import { ViewModel } from 'meteor/manuel:viewmodel';
-import { shallowEqual, mapProps } from 'recompose';
+import { shallowEqual } from 'recompose';
 import { $ } from 'meteor/jquery';
 
 import { Actions } from '/imports/share/collections/actions.js';
 import { NonConformities } from '/imports/share/collections/non-conformities.js';
 import { Risks } from '/imports/share/collections/risks.js';
-import { renderTemplate, getTitlePrefix } from '/imports/share/helpers';
+import { getTitlePrefix } from '/imports/share/helpers';
 
 export const { compose } = _;
 
@@ -34,6 +36,8 @@ export const checkAndThrow = (predicate, error = '') => {
 
   return true;
 };
+
+export const checkAndThrowC = curry((error, predicate) => checkAndThrow(predicate, error));
 
 export const flattenObjects = (collection = []) =>
   collection.reduce((prev, cur) => ({ ...prev, ...cur }), {});
@@ -104,6 +108,14 @@ export const propStandards = property('standards');
 
 export const lengthStandards = compose(length, propStandards);
 
+export const propRisks = property('risks');
+
+export const lengthRisks = compose(length, propRisks);
+
+export const propActions = property('actions');
+
+export const lengthActions = compose(length, propActions);
+
 export const propSections = property('sections');
 
 export const lengthSections = compose(length, propSections);
@@ -114,15 +126,38 @@ export const lengthTypes = compose(length, propTypes);
 
 export const propIsDeleted = property('isDeleted');
 
+export const propType = property('type');
+
+export const propKey = property('key');
+
 export const notDeleted = compose(not, propIsDeleted);
 
 export const flattenMapItems = flattenMap(propItems);
 
 export const flattenMapStandards = flattenMap(propStandards);
 
-export const assoc = curry((prop, val, obj) => Object.assign({}, obj, { [prop]: val }));
+export const assoc = curry((path, val, obj) => set(Object.assign({}, obj), path, val));
 
-export const invokeC = curry((path, obj, ...args) => invoke(obj, path, ...args));
+// Works like ramda's invoker
+// Number → String → (a → b → … → n → Object → *)
+// var sliceFrom = invoker(1, 'slice');
+// sliceFrom(6, 'abcdefghijklm'); //=> 'ghijklm'
+// var sliceFrom6 = invoker(2, 'slice')(6);
+// sliceFrom6(8, 'abcdefghijklm'); //=> 'gh'
+// invoker(0, 'bark')({ bark: () => 'woof-woof' }) // => 'woof-woof'
+export const invoker = curry((arity, method) => curry((...args) => {
+  const target = args[arity];
+
+  if (target != null && typeof target[method] === 'function') {
+    return target[method].apply(target, Array.prototype.slice.call(args, 0, arity));
+  }
+
+  throw new TypeError(`${target} does not have a method named "${method}"`);
+}, arity + 1));
+
+export const invokeStop = invoker(0, 'stop');
+
+export const invokeReady = invoker(0, 'ready');
 
 // useful with recompose's withProps:
 // const transformer = transsoc({
@@ -137,17 +172,21 @@ export const invokeC = curry((path, obj, ...args) => invoke(obj, path, ...args))
 // Object<key: path, value: func> -> obj -> obj
 export const transsoc = curry((transformations, obj) => {
   const keys = Object.keys(Object.assign({}, transformations));
-  const result = keys.map(key => assoc(key, transformations[key](obj), obj));
+  const result = keys.reduce((prev, key) => ({
+    ...prev,
+    [key]: transformations[key](obj),
+  }), {});
 
-  return _.pick(flattenObjects(result), ...keys);
+  return result;
 });
 
 export const pickC = curry((keys, obj) => _.pick(Object.assign({}, obj), ...keys));
 
 // pickDeep(['a.b.c'])({ a: { b: { c: 123 }}}) => { c: 123 }
-export const pickDeep = curry((paths, obj) =>
-  flattenObjects(paths.map(path =>
-    ({ [path.replace(/.*\./g, '')]: get(obj, path) }))));
+export const pickDeep = curry((paths, obj) => Object.assign([], paths).reduce((acc, path) => ({
+  ...acc,
+  [path.replace(/.*\./g, '')]: get(obj, path),
+}), {}));
 
 export const pickFrom = curry((prop, props) => compose(pickC(props), property(prop)));
 
@@ -157,7 +196,7 @@ export const pickFromStandards = pickFrom('standards');
 
 export const pickFromCollections = pickFrom('collections');
 
-export const omitC = curry((keys, obj) => _.omit(obj, ...keys));
+export const omitC = curry((paths, obj) => omit(obj, paths));
 
 export const getC = curry((path, obj, defaultValue) => get(obj, path, defaultValue), 2);
 
@@ -171,6 +210,14 @@ export const propEq = curry((path, assumption, obj) => equals(get(obj, path), as
 
 export const propEqId = propEq('_id');
 
+export const propEqType = propEq('type');
+
+export const propEqKey = propEq('key');
+
+export const propEqDocId = propEq('documentId');
+
+export const propEqDocType = propEq('documentType');
+
 export const findIndexById = curry((_id, array) => array.findIndex(propEqId(_id)));
 
 export const T = () => true;
@@ -180,6 +227,8 @@ export const F = () => false;
 export const find = curry((transformation, array) => Object.assign([], array).find(transformation));
 
 export const propId = property('_id');
+
+export const propValue = property('value');
 
 export const every = curry((fns, value) => fns.every(fn => fn(value)));
 
@@ -216,6 +265,8 @@ export const join = curry((separator, array) => Object.assign([], array).join(se
 
 export const trim = str => `${str}`.trim();
 
+export const split = curry((separator, str) => `${str}`.split(separator));
+
 /*
   const gt10 = n => n > 10;
   either(gt10, identity)(2);
@@ -231,6 +282,53 @@ export const either = (...fns) => (...args) => {
   return result;
 };
 
+const createArrayFn = method => curry((f, array) => Object.assign([], array)[method](f));
+export const filterC = createArrayFn('filter');
+export const mapC = createArrayFn('map');
+export const sortC = createArrayFn('sort');
+export const concatC = curry((arrays, array) => Object.assign([], array).concat(...arrays));
+export const reduceC = curry((reducer, initialValue, array) =>
+  Object.assign([], array).reduce(reducer, initialValue));
+// slice(0, 2)([1, 2, 3, 4, 5]) => [1, 2, 3]
+// slice (1, Infinity)([1, 2, 3, 4, 5]) => [2, 3, 4, 5]
+export const slice = curry((a, b, c) => c.slice(a, b));
+
+export const withoutC = curry((values, array) => _.without(Object.assign([], array), ...values));
+
+// pickDocuments(
+//   ['_id', 'profile.firstName'],
+//   [{ _id: 1, profile: { firstName: 'Alan', ... }, ... }, ...],
+//   1
+// );
+// => { _id: 1, firstName: 'Alan' }
+export const pickDocuments = curry((fields, collection, ids) => {
+  if (typeof ids !== 'string' && !Array.isArray(ids)) return ids;
+
+  if (typeof ids === 'string') return pickDeep(fields, collection[ids]);
+
+  const reducer = (prev, cur) => {
+    const doc = collection[cur];
+
+    if (doc) return prev.concat(pickDeep(fields, doc));
+
+    return prev;
+  };
+
+  return reduceC(reducer, [], ids);
+});
+
+export const combineObjects = (fns) => obj =>
+  Object.assign([], fns).reduce((prev, cur) => ({ ...prev, ...cur(obj) }), {});
+
+// Works like recompose's branch but for functions
+export const cond = (predicate, left, right) => (...args) => {
+  const _right = typeof right !== 'function' && identity || right;
+
+  if (predicate(...args)) return left(...args);
+
+  return _right(...args);
+};
+
 export const empty = (a) => {
   if (typeof a === 'string') return '';
   else if (typeof a === 'function') return () => null;
@@ -238,10 +336,6 @@ export const empty = (a) => {
   else if (a !== null && typeof a === 'object') return {};
   return a;
 };
-
-export const filterC = curry((f, array) => Object.assign([], array).filter(f));
-
-export const mapC = curry((transformer, array) => Object.assign([], array).map(transformer));
 
 export const handleMethodResult = (cb) => {
   return (err, res) => {
@@ -379,36 +473,6 @@ export const testPerformance = (func) => (...args) => {
   return result;
 };
 
-export const getProblemStatusColor = (status) => {
-  switch (status) {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 11:
-    case 12:
-    case 13:
-    case 15:
-    case 16:
-      return 'amber';
-    case 5:
-    case 10:
-    case 14:
-    case 17:
-    case 18:
-      return 'red';
-    case 19:
-    case 20:
-      return 'green';
-    default:
-      return '';
-  }
-};
-
 export const getSortedItems = (items, compareFn) =>
   Array.from(items || []).sort(compareFn);
 
@@ -428,29 +492,6 @@ export const compareRisksByScore = (risk1, risk2) => {
 
   return risk1.serialNumber - risk2.serialNumber;
 };
-
-export const compareStatusesByPriority = (() => {
-  const getPriority = (status) => {
-    const priorities = {
-      red: 3,
-      amber: 2,
-      green: 1,
-    };
-
-    return priorities[getProblemStatusColor(status)] || 0;
-  };
-
-  return (status1, status2) => {
-    const priority1 = getPriority(status1);
-    const priority2 = getPriority(status2);
-
-    if (priority1 !== priority2) {
-      return priority2 - priority1;
-    }
-
-    return status2 - status1;
-  };
-})();
 
 export const getSelectedOrgSerialNumber = () => (
   localStorage.getItem(`${Meteor.userId()}: selectedOrganizationSerialNumber`)
@@ -478,20 +519,20 @@ export const looksLikeAPromise = obj => !!(
   });
   -> { title: 'Hello World', type: 'some cool stuff' };
 */
-export const compileTemplateObject = (params, paramMap) => {
-  const regexString = Object.keys(paramMap).reduce((prev, cur) => `${prev}|{{${paramMap[cur]}}}`);
-  const regex = new RegExp(regexString, 'g');
-
-  return Object.keys(params).reduce((prev, key) => {
-    let value = params[key];
-
-    if (typeof value === 'string' && value.search(regex)) {
-      value = renderTemplate(value, paramMap);
-    }
-
-    return { ...prev, [key]: value };
-  }, {});
-};
+// export const compileTemplateObject = (params, paramMap) => {
+//   const regexString = Object.keys(paramMap).reduce((prev, cur) => `${prev}|{{${paramMap[cur]}}}`);
+//   const regex = new RegExp(regexString, 'g');
+//
+//   return Object.keys(params).reduce((prev, key) => {
+//     let value = params[key];
+//
+//     if (typeof value === 'string' && value.search(regex)) {
+//       value = renderTemplate(value, paramMap);
+//     }
+//
+//     return { ...prev, [key]: value };
+//   }, {});
+// };
 
 export const createSearchRegex = (val, isPrecise) => {
   let r;
@@ -536,4 +577,13 @@ export const searchByRegex = curry((regex, transformOrArrayOfProps, array) =>
       typeof item[prop] === 'string' && item[prop].search(regex) >= 0).length;
   }));
 
-export const omitProps = compose(mapProps, omitC);
+export const getSearchMatchText = (searchText, count) =>
+  (searchText && count ? `${count} matching results` : '');
+
+export const toDocId = transsoc({ documentId: propId });
+
+export const toDocIdAndType = documentType => compose(assoc('documentType', documentType), toDocId);
+
+// Returns a function that always returns the given value
+// always('Hello!')() => hello
+export const always = value => () => value;

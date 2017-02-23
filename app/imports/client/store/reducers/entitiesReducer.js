@@ -4,7 +4,7 @@ import mergeWith from 'lodash.mergewith';
 import set from 'lodash.set';
 import * as schemas from '../lib/schema';
 
-import { omitC } from '/imports/api/helpers';
+import { omitC, withoutC } from '/imports/api/helpers';
 
 import {
   SET_DEPARTMENTS,
@@ -27,12 +27,19 @@ import {
   REMOVE_STANDARD,
 } from '../actions/types';
 
-const normalizer = (state, action) => {
+const normalizeData = (state, action) => {
   const key = Object.keys(action.payload)[0];
   const schema = schemas[key.substring(0, key.length - 1)];
   const entitiesSchema = { [key]: [schema] };
   const normalizedData = normalize(action.payload, entitiesSchema);
-  return merge({}, state, normalizedData);
+  const dataKey = Object.keys(normalizedData.entities)[0];
+  const data = {
+    [dataKey]: {
+      entities: normalizedData.entities[dataKey],
+      allIds: normalizedData.result[dataKey],
+    },
+  };
+  return merge({}, state, data);
 };
 
 const add = (path, state, action) => {
@@ -41,25 +48,34 @@ const add = (path, state, action) => {
     : undefined);
 
   const newState = {
-    entities: { [path]: { [action.payload._id]: action.payload } },
-    result: { [path]: [action.payload._id] },
+    [path]: {
+      entities: { [action.payload._id]: action.payload },
+      allIds: [action.payload._id],
+    },
   };
 
   return mergeWith(state, newState, customizer);
 };
 
 const update = (path, state, action) =>
-  set({ ...state }, `entities.${path}.${action.payload._id}`, action.payload);
-  
-const remove = (path, state, action) => ({
-  ...state,
-  entities: {
-    ...state.entities,
-    [path]: omitC(action.payload, state.entities[path]),
-  },
-});
+  set({ ...state }, `${path}.entities.${action.payload._id}`, action.payload);
 
-export default function reducer(state = {}, action) {
+const remove = (path, state, action) => {
+  const entities = omitC([action.payload], state[path].entities);
+  const allIds = withoutC([action.payload], state[path].allIds);
+  const newState = {
+    ...state,
+    [path]: { ...state[path], entities, allIds },
+  };
+  return newState;
+};
+
+const initialState = Object.keys(schemas).reduce((acc, key) => ({
+  ...acc,
+  [schemas[key]._key]: { entities: {}, allIds: [] },
+}), {});
+
+export default function reducer(state = initialState, action) {
   switch (action.type) {
     case SET_MESSAGES:
     case SET_DEPARTMENTS:
@@ -76,7 +92,7 @@ export default function reducer(state = {}, action) {
     case SET_HELP_DOCS:
     case SET_HELP_SECTIONS:
     case SET_USERS:
-      return normalizer(state, action);
+      return normalizeData(state, action);
     case ADD_STANDARD:
       return add('standards', state, action);
     case UPDATE_STANDARD:

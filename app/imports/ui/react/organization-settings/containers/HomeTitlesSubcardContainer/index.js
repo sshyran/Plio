@@ -7,7 +7,7 @@ import store from '/imports/client/store';
 import HomeTitlesSubcard from '../../components/HomeTitlesSubcard';
 import initMainData from '../loaders/initMainData';
 
-import { pickDeep } from '/imports/api/helpers';
+import { pickDeep, getId } from '/imports/api/helpers';
 
 const enhance = compose(
   withProps({ store }),
@@ -19,7 +19,7 @@ const enhance = compose(
       changeTitle.call({
         fieldName: `${value}`.replace(/\(.*\)/, ''),
         fieldValue: text,
-        organizationId: organization._id,
+        organizationId: getId(organization),
       }, callback),
   }),
 );

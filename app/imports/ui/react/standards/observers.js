@@ -20,9 +20,15 @@ import { propEq, getId } from '/imports/api/helpers';
 import { goTo } from '../../utils/router/actions';
 
 export const observeStandards = (dispatch, query, options) => {
-  const handle = Standards.find(query, options).observeChanges({
+  const observer = Standards.find(query, options).observeChanges({
     added(_id, fields) {
-      if (handle) {
+      if (observer) {
+        // do not add imported standards through observer
+        // as they will be added through a single action
+        const { importedIds = {} } = getState().dataImport;
+
+        if (importedIds[_id]) return;
+
         dispatch(addStandard({ _id, ...fields }));
         // expand the section and type that are holding a newly created standard
         expandCollapsedStandard(_id);
@@ -48,13 +54,13 @@ export const observeStandards = (dispatch, query, options) => {
     },
   });
 
-  return handle;
+  return observer;
 };
 
 export const observeStandardBookSections = (dispatch, query, options) => {
-  const handle = StandardsBookSections.find(query, options).observeChanges({
+  const observer = StandardsBookSections.find(query, options).observeChanges({
     added(_id, fields) {
-      if (handle) {
+      if (observer) {
         dispatch(addStandardBookSection({ _id, ...fields }));
       }
     },
@@ -66,13 +72,13 @@ export const observeStandardBookSections = (dispatch, query, options) => {
     },
   });
 
-  return handle;
+  return observer;
 };
 
 export const observeStandardTypes = (dispatch, query, options) => {
-  const handle = StandardTypes.find(query, options).observeChanges({
+  const observer = StandardTypes.find(query, options).observeChanges({
     added(_id, fields) {
-      if (handle) {
+      if (observer) {
         dispatch(addStandardType({ _id, ...fields }));
       }
     },
@@ -84,5 +90,5 @@ export const observeStandardTypes = (dispatch, query, options) => {
     },
   });
 
-  return handle;
+  return observer;
 };

@@ -1,15 +1,21 @@
 import { Template } from 'meteor/templating';
+import { Meteor } from 'meteor/meteor';
+import { FlowRouter } from 'meteor/kadira:flow-router';
 
 import { ActionTypes } from '/imports/share/constants.js';
 import { UncategorizedTypeSection, AnalysisTitles } from '/imports/api/constants.js';
 import { RiskTypes } from '/imports/share/collections/risk-types.js';
-import { DocumentCardSubs } from '/imports/startup/client/subsmanagers.js';
 import { restore, remove } from '/imports/api/risks/methods.js';
 import { RisksHelp } from '/imports/api/help-messages.js';
 
 Template.Risks_Card_Read.viewmodel({
   share: 'search',
-  mixin: ['organization', 'risk', 'problemsStatus', 'utils', 'user', 'date', 'modal', 'router', 'collapsing', 'workInbox'],
+  mixin: [
+    'organization', 'risk', 'problemsStatus',
+    'utils', 'user', 'date',
+    'modal', 'router', 'collapsing',
+    'workInbox',
+  ],
   isReadOnly: false,
   isReady: false,
   RiskRCALabel: AnalysisTitles.riskAnalysis,
@@ -41,7 +47,7 @@ Template.Risks_Card_Read.viewmodel({
       _title: 'Risk',
       helpText: RisksHelp.risk,
       template: 'Risks_Card_Edit',
-      _id: this.risk() && this.risk()._id
+      _id: this.risk() && this.risk()._id,
     });
   },
   pathToDiscussion() {

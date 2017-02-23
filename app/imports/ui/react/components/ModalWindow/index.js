@@ -6,44 +6,43 @@ import { _ } from 'meteor/underscore';
 import Modal from '../Modal';
 import { setModal, onModalClose } from '/imports/client/store/actions/modalActions';
 
+const propTypes = {
+  variation: PropTypes.oneOf(['save', 'simple', null, undefined]),
+  helpContent: PropTypes.node,
+  onToggleHelpPanel: PropTypes.func,
+  isHelpPanelCollapsed: PropTypes.bool,
+  isSaving: PropTypes.bool,
+  title: PropTypes.string.isRequired,
+  submitCaptionText: PropTypes.string,
+  submitCaptionTextOnSave: PropTypes.string,
+  closeCaptionTextOnSave: PropTypes.string,
+  closeCaptionText: PropTypes.string,
+  errorText: PropTypes.string,
+  children: PropTypes.node,
+  dispatch: PropTypes.func,
+  closePortal: PropTypes.func.isRequired,
+  onModalClose: PropTypes.func,
+};
+
+const defaultProps = {
+  variation: null,
+  isSaving: false,
+  isHelpPanelCollapsed: true,
+  errorText: '',
+  submitCaptionText: 'Save',
+  submitCaptionTextOnSave: 'Saving...',
+  closeCaptionText: 'Close',
+  closeCaptionTextOnSave: 'Saving...',
+  onModalClose: () => null,
+};
+
 @pure
-export default class ModalWindow extends React.Component {
-  static get propTypes() {
-    return {
-      variation: PropTypes.oneOf(['save', 'simple', null, undefined]),
-      helpContent: PropTypes.node,
-      onToggleHelpPanel: PropTypes.func,
-      isHelpPanelCollapsed: PropTypes.bool,
-      isSaving: PropTypes.bool,
-      title: PropTypes.string.isRequired,
-      submitCaptionText: PropTypes.string,
-      submitCaptionTextOnSave: PropTypes.string,
-      closeCaptionTextOnSave: PropTypes.string,
-      closeCaptionText: PropTypes.string,
-      errorText: PropTypes.string,
-      children: PropTypes.node,
-      dispatch: PropTypes.func,
-      closePortal: PropTypes.func.isRequired,
-    };
-  }
-
-  static get defaultProps() {
-    return {
-      variation: null,
-      isSaving: false,
-      isHelpPanelCollapsed: true,
-      errorText: '',
-      submitCaptionText: 'Save',
-      submitCaptionTextOnSave: 'Saving...',
-      closeCaptionText: 'Close',
-      closeCaptionTextOnSave: 'Saving...',
-    };
-  }
-
+class ModalWindow extends React.Component {
   constructor(props) {
     super(props);
 
-    this.closeModal = this.closeModal.bind(this);
+    this._closeModal = this._closeModal.bind(this);
+    this.onModalClose = props.onModalClose.bind(this);
     this.closePortal = props.closePortal.bind(this);
     this.toggleHelpPanel = _.throttle(props.onToggleHelpPanel, 400).bind(this);
   }
@@ -54,12 +53,18 @@ export default class ModalWindow extends React.Component {
     this.props.dispatch(setModal(this.modalRef));
 
     $(this.modalRef).modal('show');
-    $(this.modalRef).on('hidden.bs.modal', () => this._mounted && this.closePortal());
+    $(this.modalRef).on('hidden.bs.modal', (e) => {
+      if (this._mounted) this.closePortal();
+
+      if (typeof this.onModalClose === 'function') this.onModalClose(e);
+
+      return this;
+    });
 
     const oldOnpopstate = window.onpopstate;
 
     window.onpopstate = (e) => {
-      this.closeModal();
+      this._closeModal();
 
       if (typeof oldOnpopstate === 'function') oldOnpopstate(e);
 
@@ -78,7 +83,7 @@ export default class ModalWindow extends React.Component {
   componentWillUnmount() {
     this._mounted = false;
     this.props.dispatch(onModalClose);
-    this.closeModal();
+    this._closeModal();
   }
 
   _getSubmitCaptionText() {
@@ -95,7 +100,7 @@ export default class ModalWindow extends React.Component {
     return isSaving && variation === 'save' ? closeCaptionTextOnSave : closeCaptionText;
   }
 
-  closeModal() {
+  _closeModal() {
     $(this.modalRef).modal('hide');
   }
 
@@ -107,10 +112,15 @@ export default class ModalWindow extends React.Component {
         submitCaptionText={this._getSubmitCaptionText()}
         closeCaptionText={this._getCloseCaptionText()}
         modalRefCb={modalRef => (this.modalRef = modalRef)}
-        onModalClose={this.closeModal}
+        onModalClose={this._closeModal}
       >
         {this.props.children}
       </Modal>
     );
   }
 }
+
+ModalWindow.propTypes = propTypes;
+ModalWindow.defaultProps = defaultProps;
+
+export default ModalWindow;

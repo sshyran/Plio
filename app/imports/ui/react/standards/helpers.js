@@ -1,5 +1,6 @@
 import { _ } from 'meteor/underscore';
 import { withProps } from 'recompose';
+import curry from 'lodash.curry';
 
 import { CollectionNames } from '/imports/share/constants';
 import { STANDARD_FILTER_MAP } from '/imports/api/constants';
@@ -14,9 +15,11 @@ import {
   getC,
   notDeleted,
   getId,
+  propEqKey,
 } from '/imports/api/helpers';
 import { addCollapsed, chainActions } from '/imports/client/store/actions/globalActions';
 import { goTo } from '../../utils/router/actions';
+import createTypeItem from '../helpers/createTypeItem';
 import store, { getState } from '/imports/client/store';
 import { SECTION_UNCATEGORIZED, TYPE_UNCATEGORIZED } from './constants';
 
@@ -28,10 +31,7 @@ export const createSectionItem = key => ({
   type: CollectionNames.STANDARD_BOOK_SECTIONS,
 });
 
-export const createTypeItem = key => ({
-  key,
-  type: CollectionNames.STANDARD_TYPES,
-});
+export const createStandardTypeItem = curry(createTypeItem)(CollectionNames.STANDARD_TYPES);
 
 export const findSelectedStandard = id =>
   compose(find(propEqId(id)), propStandards);
@@ -45,7 +45,7 @@ export const getStandardsByFilter = ({ filter, standards }) => (
     : standards.filter(notDeleted)
 );
 
-export const addCollapsedType = compose(addCollapsed, createTypeItem, propId);
+export const addCollapsedType = compose(addCollapsed, createStandardTypeItem, propId);
 
 export const addCollapsedSection = compose(addCollapsed, createSectionItem, propId);
 
@@ -125,7 +125,7 @@ export const openStandardByFilter = ({
       break;
     }
     case 2: {
-      const typeItem = createTypeItem(topLevelKey);
+      const typeItem = createStandardTypeItem(topLevelKey);
       result = dispatch(addCollapsed({ ...typeItem, close: { type: typeItem.type } }));
       break;
     }
@@ -138,10 +138,21 @@ export const openStandardByFilter = ({
 };
 
 export const expandCollapsedStandard = (_id) => {
-  const { collections: { standardsByIds }, global: { filter } } = getState();
+  const {
+    global: { filter },
+    collections: {
+      standardsByIds,
+      standardBookSectionsByIds,
+      standardTypesByIds,
+    },
+  } = getState();
   const standard = { ...standardsByIds[_id] };
-  const sectionItem = createSectionItem(standard.sectionId);
-  const typeItem = createTypeItem(standard.typeId);
+  const sectionId = standardBookSectionsByIds[standard.sectionId]
+    ? standard.sectionId
+    : SECTION_UNCATEGORIZED;
+  const typeId = standardTypesByIds[standard.typeId] ? standard.typeId : TYPE_UNCATEGORIZED;
+  const sectionItem = createSectionItem(sectionId);
+  const typeItem = createStandardTypeItem(typeId);
   let action;
 
   switch (filter) {
@@ -166,7 +177,7 @@ export const expandCollapsedStandards = (ids) => {
     global: { filter, collapsed },
   } = getState();
 
-  const notCollapsed = _id => !collapsed.find(propEq('key', _id)); // reject already expanded
+  const notCollapsed = _id => !collapsed.find(propEqKey(_id)); // reject already expanded
   const standardsFound = standards.filter(standard => ids.includes(standard._id));
   const uncategorizedSection = createUncategorizedSection({
     sections: standardBookSections,
@@ -236,7 +247,7 @@ export const collapseExpandedStandards = () => {
       // collapse all types and sections except the one that is holding selected standard
       const selectedType = standardTypesByIds[selectedStandard.typeId] ||
         { _id: TYPE_UNCATEGORIZED };
-      const selectedTypeItem = createTypeItem(getId(selectedType));
+      const selectedTypeItem = createStandardTypeItem(getId(selectedType));
       const typeCollapseAction = addCollapsed(addClose(selectedTypeItem));
 
       return store.dispatch(chainActions([typeCollapseAction, sectionCollapseAction]));

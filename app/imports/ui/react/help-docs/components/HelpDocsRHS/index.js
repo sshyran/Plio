@@ -13,7 +13,7 @@ const HelpDocsRHS = (props) => (
       expanded: props.isFullScreenMode,
     })}
   >
-    <RHS.Card className="standard-details">
+    <RHS.Card className="document-details">
       <RHS.Header
         title={props.headerTitle}
         isReady={props.isCardReady}

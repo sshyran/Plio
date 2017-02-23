@@ -7,17 +7,17 @@ import { Standards } from '/imports/share/collections/standards';
 import { RiskTypes } from '/imports/share/collections/risk-types';
 import { isOrgMember } from '../../checkers';
 import { Departments } from '/imports/share/collections/departments';
-import { Reviews } from '/imports/share/collections/reviews';
 import { NonConformities } from '/imports/share/collections/non-conformities';
 import Counter from '../../counter/server';
 import {
   makeOptionsFields,
   getCursorNonDeleted,
+  always,
 } from '../../helpers';
 import { getDepartmentsCursorByIds } from '../../departments/utils';
 import { getActionsWithLimitedFields } from '../../actions/utils';
 import { getProblemsWithLimitedFields } from '../../problems/utils';
-import { ActionTypes, DocumentTypes } from '/imports/share/constants';
+import { ActionTypes } from '/imports/share/constants';
 import { getRiskFiles, createRiskCardPublicationTree } from '../utils';
 import { getPublishCompositeOrganizationUsers } from '/imports/server/helpers/pub-helpers';
 
@@ -72,7 +72,7 @@ Meteor.publishComposite('riskCard', function ({ _id, organizationId }) {
     return this.ready();
   }
 
-  return createRiskCardPublicationTree(() => ({ _id, organizationId }));
+  return createRiskCardPublicationTree(always({ _id, organizationId }));
 });
 
 Meteor.publish('risksDeps', function (organizationId) {
@@ -105,14 +105,12 @@ Meteor.publish('risksDeps', function (organizationId) {
   const actions = getActionsWithLimitedFields(actionsQuery);
   const NCs = getProblemsWithLimitedFields({ organizationId }, NonConformities);
   const standards = getCursorNonDeleted({ organizationId }, standardsFields, Standards);
-  const reviews = Reviews.find({ organizationId, documentType: DocumentTypes.RISK });
 
   return [
     departments,
     actions,
     NCs,
     standards,
-    reviews,
   ];
 });
 

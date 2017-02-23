@@ -13,7 +13,7 @@ import ModalEdit from '../ModalEdit';
 
 const CustomersRHS = ({ isReady, organization }) => (
   <RHS flex>
-    <RHS.Card className="standard-details">
+    <RHS.Card className="document-details">
       <RHS.Header
         title="Organization"
         isReady={isReady}

@@ -57,8 +57,23 @@ export default {
     Risks.find(query).forEach((risk) => {
       RiskService.unlinkStandard({
         _id: risk._id,
-        standardId: _id
+        standardId: _id,
       });
     });
-  }
+  },
+
+  getCount({ organizationId, isDeleted, limit }) {
+    const query = { organizationId };
+    const options = {};
+
+    if (typeof isDeleted !== 'undefined' && isDeleted !== null) {
+      Object.assign(query, { isDeleted });
+    }
+
+    if (typeof limit !== 'undefined' && limit !== null) {
+      Object.assign(options, { limit });
+    }
+
+    return this.collection.find(query, options).count();
+  },
 };

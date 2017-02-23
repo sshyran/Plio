@@ -19,11 +19,33 @@ export const NonConformityFilters = {
   4: { title: 'NCs', name: 'deleted' },
 };
 
+export const RiskFilterIndexes = {
+  TYPE: 1,
+  STATUS: 2,
+  DEPARTMENT: 3,
+  DELETED: 4,
+};
+
 export const RiskFilters = {
-  1: { title: 'Risks', name: 'type', prepend: 'by' },
-  2: { title: 'Risks', name: 'status', prepend: 'by' },
-  3: { title: 'Risks', name: 'department', prepend: 'by' },
-  4: { title: 'Risks', name: 'deleted' },
+  [RiskFilterIndexes.TYPE]: {
+    title: 'Risks',
+    name: 'type',
+    prepend: 'by',
+  },
+  [RiskFilterIndexes.STATUS]: {
+    title: 'Risks',
+    name: 'status',
+    prepend: 'by',
+  },
+  [RiskFilterIndexes.DEPARTMENT]: {
+    title: 'Risks',
+    name: 'department',
+    prepend: 'by',
+  },
+  [RiskFilterIndexes.DELETED]: {
+    title: 'Risks',
+    name: 'deleted',
+  },
 };
 
 export const StandardFilters = {
@@ -238,3 +260,5 @@ export const KeyMap = {
   right: 39,
   down: 40,
 };
+
+export const DEPARTMENT_UNCATEGORIZED = 'DEPARTMENTS.UNCATEGORIZED';

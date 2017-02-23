@@ -1,4 +1,4 @@
-import { compareProps, equals, compose, not } from '/imports/api/helpers';
+import { compareProps, equals, compose, not, omitC, propEq } from '/imports/api/helpers';
 
 /**
  * @param {Object[]} collapsed - array of all currently collapsed items
@@ -7,9 +7,16 @@ import { compareProps, equals, compose, not } from '/imports/api/helpers';
  * @returns unique array of items
  */
 export const addCollapsed = (collapsed, payload) => {
-  const withoutClose = _.omit(payload, 'close');
+  if (!payload.key) {
+    if (process.env.NODE_ENV !== 'production') {
+      throw new TypeError('missing "key" prop in payload');
+    }
+    return collapsed;
+  }
+
+  const withoutClose = omitC(['close'], payload);
   const result = ((() => {
-    if (_.isFunction(payload.close)) {
+    if (typeof payload.close === 'function') {
       return collapsed.filter(payload.close).concat(withoutClose);
     }
 
@@ -18,7 +25,7 @@ export const addCollapsed = (collapsed, payload) => {
       : collapsed.concat(withoutClose);
   })());
 
-  return _.uniq(result, true, (el, i, array) => array.find(equals(el)));
+  return _.uniq(result, true, (el, i, array) => array.find(propEq('key', el.key)));
 }
 
 export const removeCollapsed = (collapsed, payload) => {

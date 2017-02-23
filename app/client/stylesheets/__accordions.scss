@@ -78,6 +78,10 @@
 }
 
 .card-block-collapse {
+  .list-group-item {
+    padding-left: 45px !important;
+    border-top: 1px solid #ddd !important;
+  }
   .card-block {
     border-top: 1px solid #ddd;
     padding: 1.32rem;

@@ -30,7 +30,7 @@ export default compose(
   }),
   shouldUpdate((props, nextProps) => {
     const pickKeys = pickC(['title', 'isDeleted', 'unreadMessagesCount', 'userId']);
-    const pickKeysDeleted = pickC(['deletedByText', 'deletedAtText']);
+    const pickKeysDeleted = pickC(['deletedBy', 'deletedAt']);
     const isNewCurrent = isNewDoc(props.organization, props.userId, props);
     const isNewNext = isNewDoc(nextProps.organization, nextProps.userId, nextProps);
     return !!(

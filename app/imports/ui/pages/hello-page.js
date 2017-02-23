@@ -3,9 +3,11 @@ import { Template } from 'meteor/templating';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import moment from 'moment-timezone';
 
-import { Organizations } from '/imports/share/collections/organizations.js';
-import { remove } from '/imports/api/users/methods.js';
-import { OrgCurrencies } from '/imports/share/constants.js';
+import { Organizations } from '/imports/share/collections/organizations';
+import { remove } from '/imports/api/users/methods';
+import { OrgCurrencies } from '/imports/share/constants';
+import { createOrgQueryWhereUserIsMember } from '/imports/api/queries';
+import { getSelectedOrgSerialNumber } from '/imports/api/helpers';
 
 
 Template.HelloPage.viewmodel({
@@ -16,18 +18,8 @@ Template.HelloPage.viewmodel({
       const organizationsHandle = template.subscribe('currentUserOrganizations');
       if (!Meteor.loggingIn() && organizationsHandle.ready()) {
         if (currentUser) {
-          const query = {
-            users: {
-              $elemMatch: {
-                userId: currentUser._id,
-                isRemoved: false,
-                removedBy: { $exists: false },
-                removedAt: { $exists: false },
-              },
-            },
-          };
-          const selectedOrganizationSerialNumber =
-            localStorage.getItem(`${Meteor.userId()}: selectedOrganizationSerialNumber`);
+          const query = createOrgQueryWhereUserIsMember(currentUser._id);
+          const selectedOrganizationSerialNumber = getSelectedOrgSerialNumber();
           const serialNumber = parseInt(selectedOrganizationSerialNumber, 10);
           const orgExists = !!Organizations.findOne({ ...query, serialNumber });
 

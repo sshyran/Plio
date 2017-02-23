@@ -6,7 +6,7 @@ import {
   onClear,
 } from './handlers';
 import { onToggleCollapse } from '/imports/ui/react/share/LHS/handlers';
-import { pickDeep, notEquals } from '/imports/api/helpers';
+import { pickDeep, notEquals, getSearchMatchText } from '/imports/api/helpers';
 import CustomersLHS from '../../components/LHS';
 
 export default compose(
@@ -36,9 +36,7 @@ export default compose(
       ? props.organizations.filter(org => props.organizationsFiltered.includes(org._id))
       : props.organizations;
 
-    const searchResultsText = props.searchText
-      ? `${organizations.length} matching results`
-      : '';
+    const searchResultsText = getSearchMatchText(props.searchText, organizations.length);
 
     return {
       ...props,

@@ -25,7 +25,7 @@ const StandardsRHS = ({
       expanded: isFullScreenMode,
     })}
   >
-    <RHS.Card className="standard-details">
+    <RHS.Card className="document-details">
       <RHS.Header
         title="Standard"
         isReady={isReady}

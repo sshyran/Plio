@@ -2,18 +2,20 @@ import React, { PropTypes } from 'react';
 
 import Field from '../Field';
 import Block from '../Block';
-import _user_ from '/imports/startup/client/mixins/user';
+import { getFullNameOrEmail } from '/imports/api/users/helpers';
 
-const NotifyRead = ({ users }) => (
-  <Block label="Notify changes">
+const Notify = ({ label = 'Notify changes', users = [] }) => (
+  <Block>
+    {label}
     <Field>
-      {users.map(_user_.userNameOrEmail).join(', ')}
+      {users.map(getFullNameOrEmail).join(', ')}
     </Field>
   </Block>
 );
 
-NotifyRead.propTypes = {
-  users: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])).isRequired,
+Notify.propTypes = {
+  label: PropTypes.string,
+  users: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
-export default NotifyRead;
+export default Notify;

@@ -8,6 +8,7 @@ import {
   SET_STANDARD_BOOK_SECTIONS,
   SET_STANDARD_TYPES,
   SET_STANDARDS,
+  SET_RISK_TYPES,
   SET_LESSONS_LEARNED,
   SET_ORGANIZATIONS,
   ADD_STANDARD,
@@ -24,8 +25,15 @@ import {
   REMOVE_ORGANIZATION,
   SET_HELP_DOCS,
   SET_HELP_SECTIONS,
+  ADD_RISK,
+  UPDATE_RISK,
+  REMOVE_RISK,
+  ADD_RISK_TYPE,
+  UPDATE_RISK_TYPE,
+  REMOVE_RISK_TYPE,
   SET_USERS,
   SET_USERS_BY_ORG_IDS,
+  SET_REVIEWS,
 } from './types';
 import { createAction } from './helpers';
 
@@ -54,6 +62,13 @@ export function setRisks(risks) {
   return {
     type: SET_RISKS,
     payload: { risks },
+  };
+}
+
+export function setRiskTypes(riskTypes) {
+  return {
+    type: SET_RISK_TYPES,
+    payload: { riskTypes },
   };
 }
 
@@ -127,6 +142,13 @@ export function setUsers(users) {
   };
 }
 
+export function setReviews(reviews) {
+  return {
+    type: SET_REVIEWS,
+    payload: { reviews },
+  };
+}
+
 export const setUsersByOrgIds = createAction(SET_USERS_BY_ORG_IDS);
 
 export const addStandard = createAction(ADD_STANDARD);
@@ -146,6 +168,18 @@ export const addStandardType = createAction(ADD_STANDARD_TYPE);
 export const updateStandardType = createAction(UPDATE_STANDARD_TYPE);
 
 export const removeStandardType = createAction(REMOVE_STANDARD_TYPE);
+
+export const addRisk = createAction(ADD_RISK);
+
+export const updateRisk = createAction(UPDATE_RISK);
+
+export const removeRisk = createAction(REMOVE_RISK);
+
+export const addRiskType = createAction(ADD_RISK_TYPE);
+
+export const updateRiskType = createAction(UPDATE_RISK_TYPE);
+
+export const removeRiskType = createAction(REMOVE_RISK_TYPE);
 
 export const addOrganization = createAction(ADD_ORGANIZATION);
 

@@ -19,7 +19,7 @@ import {
   markMessagesAsRead,
 } from '/imports/client/store/actions/discussionActions';
 import notifications from '/imports/startup/client/mixins/notifications';
-import { pickFromDiscussion, pickC, invokeC, notEquals } from '/imports/api/helpers';
+import { pickFromDiscussion, pickC, invoker, notEquals } from '/imports/api/helpers';
 import LastDiscussionMessage from '/imports/client/collections/lastDiscussionMessage';
 import { MESSAGES_PER_PAGE_LIMIT } from '../../constants';
 import { getState } from '/imports/client/store';
@@ -74,7 +74,7 @@ const loadMessagesData = ({
   const lastMessageSubscription = Meteor.subscribe('discussionMessagesLast', discussionId);
   const subscriptions = [messagesSubscription, lastMessageSubscription];
 
-  if (subscriptions.every(invokeC('ready'))) {
+  if (subscriptions.every(invoker(0, 'ready'))) {
     const query = { discussionId };
     const options = { sort: { createdAt: 1 }, fields: { viewedBy: 0 } };
     const messages = Messages.find(query, options).fetch();
@@ -96,7 +96,7 @@ const loadMessagesData = ({
     onData(null, {});
   }
 
-  return () => subscriptions.map(invokeC('stop'));
+  return () => subscriptions.map(invoker(0, 'stop'));
 };
 
 export default compose(

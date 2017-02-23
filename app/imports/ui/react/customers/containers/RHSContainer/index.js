@@ -24,15 +24,15 @@ export default compose(
     ...pickC(['isCardReady', 'urlItemId'], state.global),
     organization: state.collections.organizationsByIds[state.global.urlItemId],
   })),
+  branch(
+    props => props.isCardReady && props.urlItemId && !props.organization,
+    renderComponent(CustomersRHS.NotExist),
+    identity
+  ),
   mapProps(({ isCardReady, organizationsLength, organization, ...props }) => ({
     ...props,
     organization,
     isReady: !!(isCardReady && organizationsLength && organization),
   })),
   onlyUpdateForKeys(['isReady', 'organization']),
-  branch(
-    props => props.isReady && props.urlItemId && !props.organization,
-    renderComponent(CustomersRHS.NotExist),
-    identity
-  ),
 )(CustomersRHS);

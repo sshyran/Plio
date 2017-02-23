@@ -1,4 +1,5 @@
 import React from 'react';
+import { Col } from 'reactstrap';
 
 import createReadFields from '../../../helpers/createReadFields';
 import Source from '../../../fields/read/components/Source';
@@ -8,9 +9,10 @@ const HelpDocsRHSBodyContents = (props) => {
   const { source, section, file, owner, issueNumber } = props;
 
   const wrap = 'col-md-6';
+  const render = field => (<Col sm="6">{field}</Col>);
   const fieldsData = [
     { label: 'Section', text: section ? section.title : '' },
-    { label: 'Owner', text: owner ? owner.fullNameOrEmail() : '', wrap },
+    { label: 'Owner', text: owner ? owner.fullNameOrEmail() : '', render },
   ];
 
   if (props.userHasChangeAccess) {

@@ -1,6 +1,6 @@
 import curry from 'lodash.curry';
 
-import { Organizations } from '/imports/share/collections/organizations.js';
+import { Organizations } from '/imports/share/collections/organizations';
 import {
   ORG_CANNOT_CHANGE_SETTINGS,
   ORG_ALREADY_EXISTS,
@@ -17,7 +17,7 @@ import {
   ORG_TRANSFER_CANCELED_COMPLETED,
   ORG_USER_ALREADY_DELETED,
   ORG_CAN_NOT_BE_DELETED,
-} from '../errors.js';
+} from '../errors';
 import {
   canChangeOrgSettings,
   canInviteUsers,
@@ -25,9 +25,10 @@ import {
   isOrgOwner,
   isOrgMember,
   checkOrgMembershipBySelector,
-} from '../checkers.js';
-import { checkAndThrow } from '../helpers.js';
-import { DOC_NOT_FOUND_OR_ALREADY_UNSUBSCRIBED } from './errors';
+} from '../checkers';
+import { checkAndThrow, checkAndThrowC, compose, invoker } from '../helpers';
+import { getCollectionByDocType } from '/imports/share/helpers';
+import { DOC_NOT_FOUND_OR_ALREADY_UNSUBSCRIBED, throwExpectedNoDocs } from './errors';
 
 
 export const ORG_EnsureCanChange = (userId, organizationId) => {
@@ -164,3 +165,10 @@ export const ensureCanUnsubscribeFromDailyRecap = ({ orgSerialNumber: serialNumb
 
   return doc;
 };
+
+export const ensureThereIsNoDocuments = curry((err, docType, organizationId) => compose(
+  checkAndThrowC(err),
+  invoker(0, 'count'),
+  invoker(1, 'find')({ organizationId, isDeleted: false }),
+  getCollectionByDocType
+)(docType));

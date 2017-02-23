@@ -11,6 +11,7 @@ import { getUserOrganizations } from '../utils';
 import { isPlioUser, isOrgMember } from '../../checkers';
 import { makeOptionsFields } from '../../helpers';
 import { UserMembership } from '/imports/share/constants';
+import { createOrgQueryWhereUserIsOwner } from '../../queries';
 
 
 Meteor.publish('invitationInfo', (invitationId) => {
@@ -101,6 +102,22 @@ Meteor.publish('currentUserOrganizationBySerialNumber', function(serialNumber) {
   } else {
     return this.ready();
   }
+});
+
+Meteor.publish('dataImportUserOwnOrganizations', function publishDataImportUserOwnOrgs() {
+  const userId = this.userId;
+
+  if (!userId) return this.ready();
+
+  const query = createOrgQueryWhereUserIsOwner(userId);
+  const fields = {
+    _id: 1,
+    name: 1,
+    ...query,
+  };
+  const options = { fields };
+
+  return Organizations.find(query, options);
 });
 
 Meteor.publish('transferredOrganization', function(transferId) {

@@ -9,7 +9,7 @@ import {
   setStandards,
 } from '/imports/client/store/actions/collectionsActions';
 
-export default function loadMainData({ dispatch, organizationId }, onData) {
+export default function loadMainData({ dispatch, organizationId }, onData = () => null) {
   const query = { organizationId };
   const options = { sort: { title: 1 } };
   const sections = StandardsBookSections.find(query, options).fetch();

@@ -15,5 +15,5 @@ Template.OrgSettings_OrgDeletion.viewmodel({
       this.modal().close();
       FlowRouter.go('hello');
     }
-  }
+  },
 });

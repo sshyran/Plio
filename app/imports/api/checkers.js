@@ -3,7 +3,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema';
 import curry from 'lodash.curry';
 import { _ } from 'meteor/underscore';
 
-import { AnalysisStatuses, UserMembership, UserRoles } from '/imports/share/constants.js';
+import { AnalysisStatuses, UserRoles } from '/imports/share/constants.js';
 import { Organizations } from '/imports/share/collections/organizations.js';
 import {
   NOT_AN_ORG_MEMBER,
@@ -13,6 +13,7 @@ import {
 } from './errors.js';
 import { chain, checkAndThrow, injectCurry, getUserJoinedAt } from './helpers.js';
 import { MOBILE_BREAKPOINT } from '/imports/api/constants';
+import { createOrgQueryWhereUserIsOwner, createOrgQueryWhereUserIsMember } from './queries';
 
 const { compose } = _;
 
@@ -80,23 +81,17 @@ export const canChangeRoles = (userId, organizationId) => {
     UserRoles.EDIT_USER_ROLES,
     organizationId
   );
-}
+};
 
 export const isOrgOwner = (userId, organizationId) => {
   if (!userIdOrgIdTester(userId, organizationId)) return false;
 
-  return !!Organizations.findOne({
+  const query = {
     _id: organizationId,
-    users: {
-      $elemMatch: {
-        userId,
-        role: UserMembership.ORG_OWNER,
-        isRemoved: false,
-        removedBy: { $exists: false },
-        removedAt: { $exists: false }
-      }
-    }
-  });
+    ...createOrgQueryWhereUserIsOwner(userId),
+  };
+
+  return !!Organizations.findOne(query);
 };
 
 export const isPlioUser = (userId) => {
@@ -116,30 +111,16 @@ export const isPlioAdmin = (userId) => {
 
   return !!Organizations.findOne({
     isAdminOrg: true,
-    users: {
-      $elemMatch: {
-        userId,
-        role: UserMembership.ORG_OWNER,
-        isRemoved: false,
-        removedBy: { $exists: false },
-        removedAt: { $exists: false }
-      }
-    }
+    ...createOrgQueryWhereUserIsOwner(userId),
   });
 };
 
 export const canChangeHelpDocs = (userId) => {
-  const { _id:adminOrgId } = Organizations.findOne({
+  const query = {
     isAdminOrg: true,
-    users: {
-      $elemMatch: {
-        userId,
-        isRemoved: false,
-        removedBy: { $exists: false },
-        removedAt: { $exists: false }
-      }
-    }
-  }) || {};
+    ...createOrgQueryWhereUserIsMember(userId),
+  };
+  const { _id: adminOrgId } = Object.assign({}, Organizations.findOne(query));
 
   return !!adminOrgId && canChangeStandards(userId, adminOrgId);
 };
@@ -147,21 +128,14 @@ export const canChangeHelpDocs = (userId) => {
 export const isOrgMemberBySelector = (userId, selector) => {
   return !!Organizations.findOne({
     ...selector,
-    users: {
-      $elemMatch: {
-        userId,
-        isRemoved: false,
-        removedBy: { $exists: false },
-        removedAt: { $exists: false }
-      }
-    }
+    ...createOrgQueryWhereUserIsMember(userId),
   });
 };
 
 export const isOrgMember = (userId, organizationId) => {
   if (!userIdOrgIdTester(userId, organizationId)) return false;
 
-  return isOrgMemberBySelector(userId, { _id: organizationId })
+  return isOrgMemberBySelector(userId, { _id: organizationId });
 };
 
 export const checkAnalysis = ({ analysis = {}, updateOfStandards = {}, ...rest }, args = {}) => {

@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { compose, shallowEqual, withHandlers, withProps } from 'recompose';
 import { compose as kompose } from 'react-komposer';
 
-import { pickDeep } from '/imports/api/helpers';
+import { pickDeep, getSearchMatchText } from '/imports/api/helpers';
 import { canChangeHelpDocs } from '/imports/api/checkers';
 import {
   onClear,
@@ -23,9 +23,7 @@ const onSearchTextChanged = (props, onData) => {
   onData(null, {
     ...props,
     sections: helpSectionsData,
-    searchResultsText: props.searchText
-      ? `${helpDocs.length} matching results`
-      : '',
+    searchResultsText: getSearchMatchText(props.searchText, helpDocs.length),
   });
 };
 

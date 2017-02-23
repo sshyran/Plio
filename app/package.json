@@ -26,6 +26,7 @@
     "lodash.invoke": "^4.5.1",
     "lodash.merge": "^4.6.0",
     "lodash.mergewith": "^4.6.0",
+    "lodash.omit": "^4.5.0",
     "lodash.property": "^4.4.2",
     "lodash.set": "^4.3.2",
     "mammoth": "^1.0.3",
@@ -55,8 +56,6 @@
     "warning": "^3.0.0"
   },
   "devDependencies": {
-    "eslint-import-resolver-meteor": "^0.3.4",
-    "eslint-plugin-import": "^2.2.0",
     "redux-devtools-extension": "^1.0.0"
   }
 }

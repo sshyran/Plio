@@ -6,6 +6,7 @@ import {
   lengthStandards,
   sortArrayByTitlePrefix,
   pickDeep,
+  propEqType,
 } from '/imports/api/helpers';
 import { STANDARD_FILTER_MAP } from '/imports/api/constants';
 import SectionList from '../../components/SectionList';
@@ -16,12 +17,13 @@ import {
   openStandardByFilter,
   getSelectedStandardDeletedState,
   createUncategorizedSection,
+  getStandardsByFilter,
 } from '../../helpers';
 import { CollectionNames } from '/imports/share/constants';
 
 const redirectAndOpen = (props) => setTimeout(() => {
   const { urlItemId, filter, collapsed } = getState('global');
-  const standardsByIds = getState('collections.standardsByIds');
+  const { standardsByIds, standards } = getState('collections');
   const {
     containedIn,
     defaultContainedIn,
@@ -48,9 +50,11 @@ const redirectAndOpen = (props) => setTimeout(() => {
     filter: STANDARD_FILTER_MAP.SECTION,
   });
 
+  const visibleStds = getStandardsByFilter({ standards, filter });
+
   // if standard does not exist, do not redirect.
   // show message that standard does not exist instead.
-  if (urlItemId && !standardsByIds[urlItemId]) {
+  if (!visibleStds.length || (urlItemId && !standardsByIds[urlItemId])) {
     return;
   }
 
@@ -74,7 +78,7 @@ const redirectAndOpen = (props) => setTimeout(() => {
       }
 
       // find opened type and open a section in its section list
-      const openedType = collapsed.find(propEq('type', CollectionNames.STANDARD_TYPES));
+      const openedType = collapsed.find(propEqType(CollectionNames.STANDARD_TYPES));
       if (openedType && type && type._id === openedType.key) {
         // check if the current type is the default one
         // and redirect to default standard if needed

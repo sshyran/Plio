@@ -49,9 +49,10 @@ export default {
   ) {
     return redirectToDefaultDocument.call(this, list, getRouteOptions, redirectHandler);
   },
-  goToRisk(riskId, withQueryParams = true) {
-    const params = { riskId, orgSerialNumber: this.organizationSerialNumber() };
+  goToRisk(urlItemId, withQueryParams = true) {
+    const params = { urlItemId, orgSerialNumber: this.organizationSerialNumber() };
     const queryParams = !!withQueryParams ? { filter: this.activeRiskFilterId() } : {};
+    console.log('risk', params, queryParams);
     FlowRouter.withReplaceState(() => {
       FlowRouter.go('risk', params, queryParams);
     });

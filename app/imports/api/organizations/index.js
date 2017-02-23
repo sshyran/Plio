@@ -1,7 +1,7 @@
-import './server/publications.js';
-import './errors.js';
-import './invitation-service.js';
-import './methods.js';
-import './org-notifications-sender.js';
-import './organization-service.js';
-import './utils.js';
+import './server/publications';
+import './errors';
+import './invitation-service';
+import './methods';
+import './org-notifications-sender';
+import './organization-service';
+import './utils';

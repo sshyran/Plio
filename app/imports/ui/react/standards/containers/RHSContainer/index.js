@@ -16,6 +16,7 @@ import {
   pickDeep,
   identity,
   pickC,
+  assoc,
 } from '/imports/api/helpers';
 import StandardsRHS from '../../components/RHS';
 import { getStandardsByFilter } from '../../helpers';
@@ -26,18 +27,18 @@ const mapStateToProps = state => ({
 });
 
 export default compose(
-  connect(pickDeep(['global.filter', 'collections.standards'])),
-  shouldUpdate((props, nextProps) => !!(
-    lengthStandards(props) !== lengthStandards(nextProps) ||
-    props.filter !== nextProps.filter
-  )),
-  mapProps(props => ({ standards: getStandardsByFilter(props) })),
+  connect(pickDeep([
+    'global.filter',
+    'global.searchText',
+    'collections.standards',
+    'standards.standardsFiltered',
+  ])),
+  mapProps(props => assoc('standards', getStandardsByFilter(props), props)),
   branch(
-    lengthStandards,
+    props => lengthStandards(props),
     identity,
     renderComponent(StandardsRHS.NotFound),
   ),
-  connect(pickDeep(['global.searchText', 'standards.standardsFiltered'])),
   branch(
     props => props.searchText && !props.standardsFiltered.length,
     renderComponent(StandardsRHS.NoResults),

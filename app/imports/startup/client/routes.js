@@ -13,6 +13,7 @@ import '/imports/ui/pages';
 
 import { DocumentTypes } from '/imports/share/constants';
 import StandardsProvider from '/imports/ui/react/standards/components/Provider';
+import RisksProvider from '/imports/ui/react/risks/components/Provider';
 import CustomersProvider from '/imports/ui/react/customers/components/Provider';
 import HelpDocsProvider from '/imports/ui/react/help-docs/components/HelpDocsProvider';
 import TransitionalLayout from '/imports/ui/react/layouts/TransitionalLayout';
@@ -272,6 +273,31 @@ FlowRouter.route('/:orgSerialNumber/standards/:urlItemId/discussion', {
   },
 });
 
+FlowRouter.route('/:orgSerialNumber/risks', {
+  name: 'risks',
+  triggersEnter: [checkLoggedIn, checkEmailVerified],
+  action() {
+    mount2(RisksProvider);
+  },
+});
+
+FlowRouter.route('/:orgSerialNumber/risks/:urlItemId', {
+  name: 'risk',
+  triggersEnter: [checkLoggedIn, checkEmailVerified],
+  action() {
+    mount2(RisksProvider);
+  },
+});
+
+FlowRouter.route('/:orgSerialNumber/risks/:urlItemId/discussion', {
+  // http://localhost:3000/98/standards/Zty4NCagWvrcuLYoy/discussion
+  name: 'riskDiscussion',
+  triggersEnter: [checkLoggedIn, checkEmailVerified, BlazeLayout.reset],
+  action() {
+    mount2(RisksProvider, { isDiscussionOpened: true });
+  },
+});
+
 FlowRouter.route('/:orgSerialNumber/non-conformities/:urlItemId/discussion', {
   // http://localhost:3000/98/non-conformities/Zty4NCagWvrcuLYoy/discussion
   name: 'nonConformityDiscussion',
@@ -284,22 +310,12 @@ FlowRouter.route('/:orgSerialNumber/non-conformities/:urlItemId/discussion', {
   },
 });
 
-FlowRouter.route('/:orgSerialNumber/risks/:riskId/discussion', {
-  // http://localhost:3000/98/non-conformities/Zty4NCagWvrcuLYoy/discussion
-  name: 'riskDiscussion',
-  triggersEnter: [checkLoggedIn, checkEmailVerified],
-  action() {
-    BlazeLayout.render('Risks_Layout', {
-      content: 'Risks_Page',
-      isDiscussionOpened: true,
-    });
-  },
-});
-
 FlowRouter.route('/:orgSerialNumber', {
   name: 'dashboardPage',
-  triggersEnter: [checkLoggedIn, checkEmailVerified, BlazeLayout.reset],
+  triggersEnter: [checkLoggedIn, checkEmailVerified],
   action() {
+    BlazeLayout.reset();
+
     $(() => ReactDOM.unmountComponentAtNode(document.getElementById('app')));
 
     BlazeLayout.render('Dashboard_Layout', {
@@ -344,26 +360,6 @@ FlowRouter.route('/:orgSerialNumber/non-conformities/:urlItemId', {
   action() {
     BlazeLayout.render('NC_Layout', {
       content: 'NC_Page',
-    });
-  },
-});
-
-FlowRouter.route('/:orgSerialNumber/risks', {
-  name: 'risks',
-  triggersEnter: [checkLoggedIn, checkEmailVerified],
-  action() {
-    BlazeLayout.render('Risks_Layout', {
-      content: 'Risks_Page',
-    });
-  },
-});
-
-FlowRouter.route('/:orgSerialNumber/risks/:riskId', {
-  name: 'risk',
-  triggersEnter: [checkLoggedIn, checkEmailVerified],
-  action() {
-    BlazeLayout.render('Risks_Layout', {
-      content: 'Risks_Page',
     });
   },
 });

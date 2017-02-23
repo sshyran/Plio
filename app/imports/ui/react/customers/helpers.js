@@ -1,9 +1,12 @@
 import { _ } from 'meteor/underscore';
+import property from 'lodash.property';
 
-import { propEq } from '/imports/api/helpers';
+import { propEq, propEqKey, compose } from '/imports/api/helpers';
 import { addCollapsed, chainActions } from '/imports/client/store/actions/globalActions';
 import store, { getState } from '/imports/client/store';
 import { CustomerTypes } from '/imports/share/constants';
+import { handleRedirectAndOpen, getListData } from '../helpers';
+import { goTo } from '../../utils/router/actions';
 
 export const createTypeItem = key => ({
   key: `${key}`,
@@ -27,7 +30,7 @@ export const expandCollapsedCustomers = (ids) => {
     global: { collapsed },
   } = getState();
 
-  const notCollapsed = key => !collapsed.find(propEq('key', key));
+  const notCollapsed = key => !collapsed.find(propEqKey(key));
   const organizationsFound = organizations.filter(org => ids.includes(org._id));
 
   const types = [];
@@ -82,3 +85,14 @@ export const initCustomerTypes = (props) => {
 
   return { types };
 };
+
+export const getCustomerListData = getListData('organizations');
+
+export const goToCustomer = goTo('customer');
+export const goToCustomers = goTo('customers');
+
+export const handleCustomersRedirectAndOpen = handleRedirectAndOpen(
+  getCustomerListData,
+  goToCustomer,
+  goToCustomers,
+);

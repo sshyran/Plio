@@ -1,4 +1,5 @@
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import property from 'lodash.property';
 
 import StandardsService from './standards-service.js';
 import { StandardsSchema, StandardsUpdateSchema } from '/imports/share/schemas/standards-schema.js';
@@ -9,6 +10,7 @@ import {
   optionsSchema,
   StandardIdSchema,
   UserIdSchema,
+  OrganizationIdSchema,
 } from '/imports/share/schemas/schemas.js';
 import {
   checkOrgMembership,
@@ -17,7 +19,7 @@ import {
   S_EnsureCanChange,
   S_EnsureCanChangeChecker,
 } from '../checkers.js';
-import { chain, chainCheckers, inject } from '/imports/api/helpers.js';
+import { chain, chainCheckers, inject, compose } from '/imports/api/helpers.js';
 import Method, { CheckedMethod } from '../method.js';
 
 const injectSTD = inject(Standards);
@@ -120,5 +122,37 @@ export const removedFromNotifyList = new Method({
     if (this.isSimulation) return undefined;
 
     return new StandardsNotificationsSender(standardId).removedFromNotifyList(this.userId);
+  },
+});
+
+export const getCount = new Method({
+  name: 'standards.getCount',
+
+  validate: new SimpleSchema([
+    OrganizationIdSchema,
+    {
+      isDeleted: {
+        type: Boolean,
+        optional: true,
+      },
+      limit: {
+        type: Number,
+        optional: true,
+      },
+    },
+  ]).validator(),
+
+  check(checker) {
+    if (this.isSimulation) return undefined;
+
+    return checker(
+      compose(checkOrgMembership(this.userId), property('organizationId'))
+    );
+  },
+
+  run(props) {
+    if (this.isSimulation) return undefined;
+
+    return StandardsService.getCount(props);
   },
 });

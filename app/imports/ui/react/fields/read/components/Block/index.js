@@ -1,20 +1,31 @@
 import React, { PropTypes } from 'react';
+import { CardBlock, ListGroup, CardTitle } from 'reactstrap';
+import cx from 'classnames';
 
-const CardBlock = ({ label, children }) => (
-  <div>
-    <div className="card-block card-subheading">
-      <h4 className="card-title">{label}</h4>
-    </div>
+const Block = ({
+  wrapper,
+  heading: { className: headingCx, ...heading } = {},
+  title,
+  listGroup,
+  children,
+}) => (
+  <div {...wrapper}>
+    <CardBlock className={cx('card-subheading', headingCx)} {...heading}>
+      <CardTitle {...title}>{children[0]}</CardTitle>
+    </CardBlock>
 
-    <div className="list-group">
-      {children}
-    </div>
+    <ListGroup {...listGroup}>
+      {children[1]}
+    </ListGroup>
   </div>
 );
 
-CardBlock.propTypes = {
-  label: PropTypes.string,
+Block.propTypes = {
+  wrapper: PropTypes.object,
+  heading: PropTypes.object,
+  title: PropTypes.object,
+  listGroup: PropTypes.object,
   children: PropTypes.node,
 };
 
-export default CardBlock;
+export default Block;

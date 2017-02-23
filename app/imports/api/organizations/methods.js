@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { ValidatedMethod } from 'meteor/mdg:validated-method';
 import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+import property from 'lodash.property';
 
 import OrganizationService from './organization-service';
 import InvitationService from './invitation-service';
@@ -14,18 +15,19 @@ import {
   reviewReviewerIdSchema,
 } from '/imports/share/schemas/organization-schema';
 import {
-  WorkflowTypes, ProblemMagnitudes, InvitationStatuses, DocumentTypesPlural,
+  WorkflowTypes, ProblemMagnitudes, InvitationStatuses,
+  DocumentTypes, DocumentTypesPlural,
 } from '/imports/share/constants';
 import {
   IdSchema, ReminderTimePeriodSchema,
   OrganizationIdSchema, NewUserDataSchema,
   UserIdSchema, TimezoneSchema,
+  pwdSchemaObj, idSchemaDoc,
 } from '/imports/share/schemas/schemas';
 import Method from '../method.js';
-import { chain } from '/imports/api/helpers.js';
+import { chain, compose } from '/imports/api/helpers.js';
 import {
   checkOrgMembership,
-  checkDocExistance,
   ORG_CheckExistance,
   ORG_EnsureCanChange,
   ORG_EnsureNameIsUnique,
@@ -39,13 +41,12 @@ import {
   USR_EnsureIsPlioAdmin,
   USR_EnsureIsPlioUser,
 } from '../checkers.js';
-import { USR_EnsurePasswordIsValid } from '/imports/api/users/checkers';
-import { ensureCanUnsubscribeFromDailyRecap } from './checkers';
+import { USR_EnsurePasswordIsValid, ensureCanChangeRoles } from '/imports/api/users/checkers';
+import { ensureCanUnsubscribeFromDailyRecap, ensureThereIsNoDocuments } from './checkers';
+import { CANNOT_IMPORT_DOCS } from './errors';
 
 
-const nameSchema = new SimpleSchema({
-  name: { type: String }
-});
+const nameSchema = new SimpleSchema({ name: { type: String } });
 
 const problemGuidelineTypeSchema = new SimpleSchema({
   type: {
@@ -639,10 +640,7 @@ export const deleteCustomerOrganization = new Method({
     OrganizationIdSchema,
     {
       // Plio Ltd. owner's password encoded with SHA256
-      adminPassword: {
-        type: String,
-        regEx: /^[A-Fa-f0-9]{64}$/
-      }
+      adminPassword: pwdSchemaObj,
     }
   ]).validator(),
 
@@ -760,5 +758,38 @@ export const updateLastAccessedDate = new Method({
     }
 
     return OrganizationService.updateLastAccessedDate({ organizationId });
+  },
+});
+
+export const importDocuments = new Method({
+  name: 'Organizations.importDocuments',
+
+  validate: new SimpleSchema({
+    to: idSchemaDoc,
+    from: idSchemaDoc,
+    documentType: {
+      type: String,
+      allowedValues: [DocumentTypes.STANDARD/* , DocumentTypes.RISK */],
+    },
+    password: pwdSchemaObj,
+  }).validator(),
+
+  check(checker) {
+    if (this.isSimulation) return undefined;
+    const checkIfCanChangeRoles = ensureCanChangeRoles(this.userId);
+    const throwIfThereAreDocs = ensureThereIsNoDocuments(CANNOT_IMPORT_DOCS);
+
+    return checker(chain(
+      compose(checkIfCanChangeRoles, property('to')),
+      compose(checkIfCanChangeRoles, property('from')),
+      compose(USR_EnsurePasswordIsValid(this.userId), property('password')),
+      ({ to, documentType }) => throwIfThereAreDocs(documentType, to),
+    ));
+  },
+
+  run(props) {
+    if (this.isSimulation) return undefined;
+
+    return OrganizationService.importDocuments({ ...props, userId: this.userId });
   },
 });

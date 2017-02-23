@@ -516,3 +516,8 @@ export const issueNumberSchema = new SimpleSchema({
     optional: true,
   },
 });
+
+export const pwdSchemaObj = {
+  type: String,
+  regEx: /^[A-Fa-f0-9]{64}$/,
+};

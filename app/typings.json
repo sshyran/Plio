@@ -1,9 +1,12 @@
 {
   "globalDependencies": {
     "classnames": "registry:dt/classnames#0.0.0+20160316155526",
-    "react": "registry:dt/react#0.14.0+20161024223416",
-    "react-dom": "registry:dt/react-dom#0.14.0+20160412154040",
     "recompose": "registry:dt/recompose#0.20.2+20160930120758",
     "redux": "registry:dt/redux#3.5.2+20160703092728"
+  },
+  "dependencies": {
+    "react": "registry:npm/react#15.0.1+20170104200836",
+    "react-dom": "registry:npm/react-dom#15.0.1+20160826174104",
+    "react-redux": "registry:npm/react-redux#4.4.0+20160614222153"
   }
 }

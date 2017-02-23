@@ -50,7 +50,7 @@ Template.Risks_Create.viewmodel({
       open({
         _id,
         _title: 'Risk',
-        template: 'Risks_Card_Edit'
+        template: 'Risks_Card_Edit',
       });
     };
 

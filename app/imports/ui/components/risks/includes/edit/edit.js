@@ -1,19 +1,12 @@
 import { Template } from 'meteor/templating';
-import moment from 'moment-timezone';
-import invoke from 'lodash.invoke';
 
 import {
   update,
   remove,
-  updateViewedBy,
   insertScore,
-  removeScore
+  removeScore,
 } from '/imports/api/risks/methods.js';
-import { WorkflowTypes } from '/imports/share/constants.js';
-import { AnalysisTitles } from '/imports/api/constants.js';
-import { isViewed } from '/imports/api/checkers.js';
-import { getTzTargetDate } from '/imports/share/helpers.js';
-import { ALERT_AUTOHIDE_TIME } from '/imports/api/constants';
+import { AnalysisTitles, ALERT_AUTOHIDE_TIME } from '/imports/api/constants';
 
 Template.Risks_Card_Edit.viewmodel({
   mixin: ['risk', 'organization', 'callWithFocusCheck', 'modal', 'utils', 'router'],

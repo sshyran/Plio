@@ -5,7 +5,8 @@ import Block from '../Block';
 import LinkItem from '../LinkItem';
 
 const LinkItemList = ({ items, label }) => (
-  <Block label={label}>
+  <Block>
+    {label}
     <Field>
       {items.map(({ _id, href, indicator, title, sequentialId }) => (
         <LinkItem key={_id} {...{ href, indicator, title, sequentialId }} />

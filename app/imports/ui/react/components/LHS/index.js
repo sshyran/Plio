@@ -1,11 +1,30 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 import cx from 'classnames';
+import { Card, ListGroup, ListGroupItem } from 'reactstrap';
 
-import propTypes from './propTypes';
 import ClearField from '../../fields/read/components/ClearField';
 import AddButton from '../Buttons/AddButton';
 import TextInput from '../../forms/components/TextInput';
 import Icon from '../Icons/Icon';
+
+const propTypes = {
+  filter: PropTypes.number,
+  collapsed: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string,
+    type: PropTypes.string,
+  })),
+  isFocused: PropTypes.bool,
+  animating: PropTypes.bool,
+  searchText: PropTypes.string,
+  searchResultsText: PropTypes.string,
+  onClear: PropTypes.func,
+  onModalButtonClick: PropTypes.func,
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  onChange: PropTypes.func,
+  renderAddButton: PropTypes.func,
+  children: PropTypes.node,
+};
 
 const LHS = ({
   animating = false,
@@ -18,24 +37,28 @@ const LHS = ({
   onFocus,
   onBlur,
   onChange,
+  renderAddButton = () => onModalButtonClick && (
+    <AddButton onClick={onModalButtonClick}>
+      Add
+    </AddButton>
+  ) || null,
 }) => {
   let searchInput;
 
+  const cn = cx(
+    'form-group',
+    'row',
+    'with-loader',
+    { loading: animating },
+  );
+
   return (
-    <div className="card">
+    <Card>
       <div className="search-form">
-        <div
-          className={cx(
-            'form-group',
-            'row',
-            'with-loader',
-            { loading: animating }
-          )}
-        >
+        <div className={cn}>
           <ClearField
+            {...{ animating, isFocused }}
             onClick={e => onClear && onClear(searchInput)(e)}
-            animating={animating}
-            isFocused={isFocused}
           >
             <TextInput
               {...{ onChange, onBlur, onFocus }}
@@ -43,7 +66,6 @@ const LHS = ({
               value={searchText}
               disabled={animating}
               getRef={input => (searchInput = input)}
-              className="form-control"
               placeholder="Search..."
             />
           </ClearField>
@@ -52,25 +74,19 @@ const LHS = ({
             <Icon name="circle-o-notch spin" className="small-loader" />
           )}
         </div>
-        {onModalButtonClick && (
-          <AddButton onClick={onModalButtonClick}>
-            Add
-          </AddButton>
-        )}
+        {renderAddButton({ animating, isFocused, searchText, searchResultsText })}
       </div>
 
-      <div className="list-group list-group-accordion">
+      <ListGroup className="list-group-accordion">
         {children}
 
         {searchResultsText && (
-          <div
-            className="list-group-item list-group-subheading search-results-meta text-muted"
-          >
+          <ListGroupItem className="list-group-subheading search-results-meta text-muted">
             {searchResultsText}
-          </div>
+          </ListGroupItem>
         )}
-      </div>
-    </div>
+      </ListGroup>
+    </Card>
   );
 };
 

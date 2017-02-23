@@ -15,7 +15,7 @@ const StandardList = (props) => (
         urlItemId={props.urlItemId}
         _id={standard._id}
         type={standard.type}
-        // {...standard}
+        {...standard}
       />
     ))}
   </div>

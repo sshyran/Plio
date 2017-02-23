@@ -3,7 +3,7 @@ import { compose, withState, lifecycle, branch, renameProp } from 'recompose';
 import property from 'lodash.property';
 import { Input } from 'reactstrap';
 
-import { omitProps } from '/imports/api/helpers';
+import { omitProps } from '../../../helpers';
 
 const enhance = compose(
   branch(

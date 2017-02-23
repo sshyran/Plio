@@ -16,7 +16,7 @@ const StandardsRHSNotFound = ({ filter }) => {
 
   return (
     <RHS flex>
-      <RHS.Card className="standard-details">
+      <RHS.Card className="document-details">
         <div className="card-block card-heading">
           <h5>{text}</h5>
         </div>

@@ -1,4 +1,5 @@
 import { batchActions } from 'redux-batched-actions';
+import { Tracker } from 'meteor/tracker';
 
 import { BackgroundSubs } from '/imports/startup/client/subsmanagers';
 import { Departments } from '/imports/share/collections/departments';
@@ -23,7 +24,6 @@ import { setDepsReady } from '/imports/client/store/actions/standardsActions';
 
 export default function loadDeps({ dispatch, organizationId, initializing }, onData) {
   const subscription = BackgroundSubs.subscribe('standardsDeps', organizationId);
-
   if (subscription.ready()) {
     const query = { organizationId };
     const pOptions = { sort: { serialNumber: 1 } };
@@ -48,7 +48,8 @@ export default function loadDeps({ dispatch, organizationId, initializing }, onD
     if (initializing) {
       // set standards only when initializing because
       // later observers will be running
-      const standards = Standards.find(query, { sort: { title: 1 } }).fetch();
+      const standards = Tracker.nonreactive(() =>
+        Standards.find(query, { sort: { title: 1 } }).fetch());
 
       reduxActions = reduxActions.concat(setStandards(standards));
     }
