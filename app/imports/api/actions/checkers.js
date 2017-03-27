@@ -99,7 +99,7 @@ export const ACT_OnLinkChecker = ({ documentId, documentType }, action) => {
 };
 
 export const ACT_OnCompleteChecker = ({ userId }, action) => {
-  checkAndThrow(userId !== action.toBeCompletedBy, ACT_CANNOT_COMPLETE);
+  checkAndThrow(userId !== action.ownerId, ACT_CANNOT_COMPLETE);
 
   checkAndThrow(!action.canBeCompleted(), ACT_CANNOT_COMPLETE);
 
@@ -107,7 +107,7 @@ export const ACT_OnCompleteChecker = ({ userId }, action) => {
 };
 
 export const ACT_OnUndoCompletionChecker = ({ userId }, action) => {
-  checkAndThrow(userId !== action.completedBy, ACT_COMPLETION_CANNOT_BE_UNDONE);
+  checkAndThrow(userId !== action.ownerId, ACT_COMPLETION_CANNOT_BE_UNDONE);
 
   checkAndThrow(!action.canCompletionBeUndone(), ACT_COMPLETION_CANNOT_BE_UNDONE);
 
@@ -115,7 +115,7 @@ export const ACT_OnUndoCompletionChecker = ({ userId }, action) => {
 };
 
 export const ACT_OnVerifyChecker = ({ userId }, action) => {
-  checkAndThrow(userId !== action.toBeVerifiedBy, ACT_CANNOT_VERIFY);
+  checkAndThrow(userId !== action.ownerId, ACT_CANNOT_VERIFY);
 
   checkAndThrow(!action.canBeVerified(), ACT_CANNOT_VERIFY);
 

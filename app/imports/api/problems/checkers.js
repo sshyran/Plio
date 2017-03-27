@@ -28,11 +28,10 @@ import { isOrgOwner } from '../checkers';
 
 export const P_IsAnalysisOwner = (userId, organizationId, {
   status,
-  completedBy,
-  completedAt,
-} = {}) => (status === 1) && completedBy && completedAt && _.some([
+  ownerId,
+} = {}) => (status === 1) && ownerId && _.some([
   isOrgOwner(userId, organizationId),
-  Object.is(userId, completedBy),
+  Object.is(userId, ownerId),
 ]);
 
 export const P_EnsureIsAnalysisOwner = (userId, organizationId, doc = {}) => {
@@ -43,8 +42,8 @@ export const P_EnsureIsAnalysisOwner = (userId, organizationId, doc = {}) => {
   return doc;
 };
 
-export const P_IsExecutor = ({ userId } = {}, { executor } = {}) => {
-  return Object.is(userId, executor);
+export const P_IsExecutor = ({ userId } = {}, responsibleId) => {
+  return Object.is(userId, responsibleId);
 };
 
 export const P_OnSetAnalysisExecutorChecker = ({ ...args }, doc) => {
@@ -60,7 +59,7 @@ export const P_OnSetAnalysisDateChecker = ({ ...args }, doc) => {
 };
 
 export const P_OnCompleteAnalysisChecker = ({ userId }, doc) => {
-  checkAndThrow(!P_IsExecutor({ userId }, doc.analysis), P_ANALYSIS_CANNOT_BE_COMPLETED);
+  checkAndThrow(!P_IsExecutor({ userId }, doc.ownerId), P_ANALYSIS_CANNOT_BE_COMPLETED);
 
   checkAndThrow(doc.isAnalysisCompleted(), P_ANALYSIS_ALREADY_COMPLETED);
 
@@ -102,7 +101,7 @@ export const P_OnSetAnalysisCommentsChecker = ({ userId }, doc) => {
 };
 
 export const P_OnStandardsUpdateChecker = ({ userId }, doc) => {
-  checkAndThrow(!P_IsExecutor({ userId }, doc.updateOfStandards), P_STANDARDS_CANNOT_BE_UPDATED);
+  checkAndThrow(!P_IsExecutor({ userId }, doc.originatorId), P_STANDARDS_CANNOT_BE_UPDATED);
 
   checkAndThrow(doc.areStandardsUpdated(), P_STANDARDS_ALREADY_UPDATED);
 

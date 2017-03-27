@@ -1,14 +1,17 @@
 <template name="Analysis_ToBeCompletedBy_Edit">
-  {{#FormField label=label}}
-    {{#Completion_Edit
-      isButtonVisible=isButtonVisible
-      canButtonBeShown=canButtonBeShown
-      text=comments
-      onComplete=complete
-      onUndo=undo}}
-
-      {{> Select_Member (selectArgs)}}
-
-    {{/Completion_Edit}}
-  {{/FormField}}
+  {{#if isButtonVisible}}
+    <div class="form-group row">
+      <label class="form-control-label col-xs-12 col-sm-4">
+        <span>Complete analysis</span>
+      </label>
+      <div class="col-xs-12 col-sm-8">
+        {{> Completion_Edit
+            isButtonVisible=isButtonVisible
+            canButtonBeShown=canButtonBeShown
+            text=comments
+            onComplete=complete
+            onUndo=undo}}
+      </div>
+    </div>
+  {{/if}}
 </template>

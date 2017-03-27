@@ -14,27 +14,8 @@
             assignee=this.executor
             comments=this.completionComments
             isButtonVisible=true
-            placeholder="Who will do it?"
-            label="Who will do it?"
-            onUpdate=methods.setExecutor
             onComplete=methods.complete}}
       {{else}}
-        {{> Analysis_TargetDate_Edit
-            date=this.completedAt
-            placeholder="Completed date"
-            label="Completed date"
-            disabled=areCompletionFieldsDisabled
-            onUpdate=methods.setCompletedDate}}
-
-        {{> Analysis_ToBeCompletedBy_Edit
-            assignee=this.completedBy
-            isButtonVisible=false
-            placeholder="Completed by"
-            label="Completed by"
-            disabled=areCompletionFieldsDisabled
-            onUpdate=methods.setCompletedBy
-            onUndo=methods.undo}}
-
         {{> Analysis_Comments_Edit
             comments=this.completionComments
             disabled=areCompletionFieldsDisabled

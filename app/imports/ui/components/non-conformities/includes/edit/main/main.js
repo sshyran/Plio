@@ -1,8 +1,8 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 
 import { WorkflowTypes } from '/imports/share/constants.js';
 import { isViewed } from '/imports/api/checkers.js';
-
 
 import {
   updateViewedBy,
@@ -19,7 +19,7 @@ import {
   setAnalysisComments,
   setStandardsUpdateCompletedBy,
   setStandardsUpdateCompletedDate,
-  setStandardsUpdateComments
+  setStandardsUpdateComments,
 } from '/imports/api/non-conformities/methods';
 
 Template.NC_Card_Edit_Main.viewmodel({
@@ -40,7 +40,7 @@ Template.NC_Card_Edit_Main.viewmodel({
       updateOfStandards,
       magnitude,
       methodRefs: this.methodRefs,
-      ...(fn => fn ? { callMethod: fn } : undefined)(this.callMethod)
+      ...(fn => (fn ? { callMethod: fn } : undefined))(this.callMethod),
     };
   },
   methodRefs() {
@@ -58,7 +58,7 @@ Template.NC_Card_Edit_Main.viewmodel({
       setAnalysisComments,
       setStandardsUpdateCompletedBy,
       setStandardsUpdateCompletedDate,
-      setStandardsUpdateComments
+      setStandardsUpdateComments,
     };
   },
   showRootCauseAnalysis() {
@@ -73,5 +73,5 @@ Template.NC_Card_Edit_Main.viewmodel({
   },
   getData() {
     return this.getChildrenData();
-  }
+  },
 });

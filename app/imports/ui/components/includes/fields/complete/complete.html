@@ -1,31 +1,15 @@
 <template name="Completion_Edit">
-  <div class="form-group form-group-flex no-margin">
-    {{> Template.contentBlock}}
-
-    {{#if canButtonBeShown}}
-      {{#if isButtonVisible}}
-        <button type="button" class="btn margin-left"
-          {{b "text: getButtonText, toggle: isFormVisible, class: { btn-success: !isFormVisible, btn-link: isFormVisible }"}}>
-        </button>
-      {{else}}
-        <button type="button" class="btn margin-left btn-link" {{b "click: undo"}}>Undo</button>
-      {{/if}}
-    {{/if}}
+  <div class="form-group">
+    <textarea class="form-control" rows="3"
+        {{b "value: text, attr: { placeholder: placeholder }"}}></textarea>
   </div>
-
-  {{#if isFormVisible}}
-    <div class="form-group margin-top">
-      <textarea class="form-control" rows="3"
-          {{b "value: text, attr: { placeholder: placeholder }"}}></textarea>
-    </div>
-    <button type="button" class="btn btn-success margin-right pull-left" {{b "click: complete"}}>
-      <span {{b "text: buttonSuccessText"}}></span>
+  <button type="button" class="btn btn-success margin-right pull-left" {{b "click: complete"}}>
+    <span {{b "text: buttonSuccessText"}}></span>
+  </button>
+  {{#if hasFailFn}}
+    <button type="button" class="btn btn-danger pull-left"
+        {{b "click: fail"}}>
+      <span {{b "text: buttonFailText"}}></span>
     </button>
-    {{#if hasFailFn}}
-      <button type="button" class="btn btn-danger pull-left"
-          {{b "click: fail"}}>
-        <span {{b "text: buttonFailText"}}></span>
-      </button>
-    {{/if}}
   {{/if}}
 </template>
